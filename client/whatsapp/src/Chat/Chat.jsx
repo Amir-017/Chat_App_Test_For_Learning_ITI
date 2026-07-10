@@ -109,7 +109,7 @@ export const Chat = () => {
         });
         setMessage('');
     };
-
+    // function to handle editing messages
     const handleEditMessage = (msg) => {
         setEditingMessage(msg);
         setMessage(msg.message);
@@ -122,18 +122,14 @@ export const Chat = () => {
             setMessage('');
         }
     }, [selectedUser]);
-
+    // function to cancel editing messages
     const cancelEdit = () => {
         setEditingMessage(null);
         setMessage('');
     }
     return (
         <div className="flex h-screen bg-gray-100">
-
-
             <div className="w-4/5 flex flex-col bg-[#efeae2]">
-
-
                 <div className="bg-emerald-600 px-6 py-4 flex items-center gap-3 shadow-md">
                     <div className="w-10 h-10 bg-emerald-300 rounded-full flex items-center justify-center text-emerald-800 font-bold">
                         {selectedUser?.name?.[0]?.toUpperCase() || '?'}
@@ -142,8 +138,6 @@ export const Chat = () => {
                         {selectedUser ? selectedUser.name : 'اختار شخص عشان تبدأ الشات'}
                     </h2>
                 </div>
-
-
                 <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
                     {allMessages
                         ?.filter(
@@ -157,9 +151,9 @@ export const Chat = () => {
                                 className={`w-full flex items-center gap-2 group ${msg.sender === currentUser ? 'justify-end' : 'justify-start'
                                     }`}
                             >
-                                {/* التلات نقط - تظهر بس لصاحب الرسالة وعند الـ hover */}
+                                
                                 <MessageOptions
-                                    openUpward={index > 2} // أول 3 رسايل يفتح المينيو تحت، والباقي فوق
+                                    openUpward={index > 2} 
                                     message={msg}
                                     setCheckDelete={setCheckDelete}
                                     setAllMessages={setAllMessages}
