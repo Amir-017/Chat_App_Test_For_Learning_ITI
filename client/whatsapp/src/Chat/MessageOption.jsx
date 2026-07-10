@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import api from '../Api/axios';
 
-const MessageOptions = ({ message, openUpward, setCheckDelete, setAllMessages, socket, selectedUser }) => {
+const MessageOptions = ({ message, openUpward, setCheckDelete, setAllMessages, socket, selectedUser, onEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const currentUser = JSON.parse(localStorage.getItem('user'));
@@ -50,7 +49,7 @@ const handleDeleteMessage = (msg) => {
         >
           <button
             onClick={() => {
-              onEdit();
+              onEdit(message);
               setIsOpen(false);
             }}
             className="w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition whitespace-nowrap"

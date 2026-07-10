@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { io } from "socket.io-client";
 import MessageOptions from "./MessageOption";
 import api from "../Api/axios";
@@ -12,6 +12,8 @@ export const Chat = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const [checkDelete, setCheckDelete] = useState(null);
+    const [editingMessage, setEditingMessage] = useState(null);
+    const inputRef = useRef(null);
     const socket = useMemo(() => io('http://localhost:3000'), []);
     const currentUser = JSON.parse(localStorage.getItem('user'));
 
@@ -20,12 +22,29 @@ export const Chat = () => {
         socket.on('connect', () => {
             socket.emit('join-room', currentUser);
         });
-        socket.on('receive-message', ({ message, sender, receiver }) => {
-            //if(!sender === receiver) 
-            setAllMessages((prev) => [...prev, { message, sender, receiver }]);
+        socket.on('receive-message', (messageData) => {
+            setAllMessages((prev) => [...prev, messageData]);
+        });
+        socket.on('message-edited', ({ messageId, newMessage }) => {
+            setAllMessages((prev) =>
+                prev.map((msg) =>
+                    msg._id === messageId
+                        ? { ...msg, message: newMessage, isEdited: true, editedAt: new Date().toISOString() }
+                        : msg
+                )
+            );
+        });
+        socket.on('message-delete-error', ({ error }) => {
+            console.error(error);
+        });
+        socket.on('message-edit-error', ({ error }) => {
+            console.error(error);
         });
         return () => {
             socket.off('receive-message');
+            socket.off('message-edited');
+            socket.off('message-delete-error');
+            socket.off('message-edit-error');
         };
     }, [socket]);
 
@@ -72,17 +91,41 @@ export const Chat = () => {
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (message.trim() === '' || !selectedUser) return;
+
+        if (editingMessage) {
+            socket.emit('edit-message', {
+                messageId: editingMessage._id,
+                newMessage: message.trim(),
+            });
+            setEditingMessage(null);
+            setMessage('');
+            return;
+        }
+
         socket.emit('send-message', {
-            message,
+            message: message.trim(),
             receiver: selectedUser._id,
             sender: currentUser,
         });
-        setAllMessages((prevMessages) => [...prevMessages, { message, sender: currentUser, receiver: selectedUser._id }]);
         setMessage('');
     };
 
-    const handleEditMessage = (msg, index) => {
-        console.log('Edit message:', msg, 'at index:', index);
+    const handleEditMessage = (msg) => {
+        setEditingMessage(msg);
+        setMessage(msg.message);
+        window.requestAnimationFrame(() => inputRef.current?.focus());
+    };
+
+    useEffect(() => {
+        if (!selectedUser) {
+            setEditingMessage(null);
+            setMessage('');
+        }
+    }, [selectedUser]);
+
+    const cancelEdit = () => {
+        setEditingMessage(null);
+        setMessage('');
     }
     return (
         <div className="flex h-screen bg-gray-100">
@@ -122,20 +165,38 @@ export const Chat = () => {
                                     setAllMessages={setAllMessages}
                                     socket={socket}
                                     selectedUser={selectedUser}
+                                    onEdit={handleEditMessage}
                                 />
                                 {msg.isDeleted ? (
                                     <p className="px-4 py-2 max-w-xs italic text-sm text-gray-400 bg-gray-100 rounded-2xl border border-gray-200">
                                         تم حذف هذه الرسالة
                                     </p>
+                                ) : msg.sender === currentUser ? (
+                                    <div className="flex justify-end max-w-[75%]">
+                                        <div className="min-w-0 rounded-2xl rounded-tr-none bg-[#d9fdd3] px-4 py-2 shadow-sm text-gray-900">
+                                            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                                                {msg.message}
+                                            </p>
+                                            {msg.isEdited && (
+                                                <div className="mt-1 text-[10px] italic text-emerald-900/60 text-right">
+                                                    edited
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 ) : (
-                                    <p
-                                        className={`px-4 py-2 max-w-xs shadow text-white ${msg.sender === currentUser
-                                            ? 'bg-emerald-500 rounded-2xl rounded-tr-none'
-                                            : 'bg-gray-400 rounded-2xl rounded-tl-none'
-                                            }`}
-                                    >
-                                        {msg.message}
-                                    </p>
+                                    <div className="flex justify-start max-w-[75%]">
+                                        <div className="min-w-0 rounded-2xl rounded-tl-none bg-white px-4 py-2 shadow-sm text-gray-900 border border-gray-100">
+                                            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                                                {msg.message}
+                                            </p>
+                                            {msg.isEdited && (
+                                                <div className="mt-1 text-[10px] italic text-gray-500 text-right">
+                                                    edited
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 )}
 
                             </div>
@@ -144,21 +205,32 @@ export const Chat = () => {
 
 
                 <form onSubmit={handleSendMessage} className="bg-white px-4 py-3 flex items-center gap-3 border-t border-gray-200">
+                    {editingMessage && (
+                        <button
+                            type="button"
+                            onClick={cancelEdit}
+                            className="text-xs font-semibold text-red-500 hover:text-red-600"
+                        >
+                            Cancel edit
+                        </button>
+                    )}
                     <input
+                        ref={inputRef}
                         type="text"
                         value={message}
                         disabled={!selectedUser}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="اكتب رسالة..."
+                        placeholder={editingMessage ? 'عدّل الرسالة...' : 'اكتب رسالة...'}
                         className="flex-1 bg-gray-100 rounded-full px-5 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     />
                     <button
                         type="submit"
                         className="bg-emerald-500 hover:bg-emerald-600 text-white w-11 h-11 rounded-full flex items-center justify-center transition"
                     >
-                        <svg className="w-5 h-5 rotate-90" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                        </svg>
+                            <svg className="w-5 h-5 rotate-90" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                            </svg>
+                       
                     </button>
                 </form>
             </div>

@@ -41,6 +41,50 @@ const editeMessage = async (req, res) => {
 
 //////////////////////////////////
 
+// Edit Message via Socket
+
+//////////////////////////////////
+const editMessage = (io, socket) => {
+  socket.on("edit-message", async ({ messageId, newMessage }) => {
+    try {
+      const updatedMessage = await Message.findByIdAndUpdate(
+        messageId,
+        {
+          message: newMessage,
+          isEdited: true,
+          editedAt: new Date(),
+        },
+        { new: true }
+      );
+
+      if (!updatedMessage) {
+        socket.emit("message-edit-error", {
+          messageId,
+          error: "Message not found",
+        });
+        return;
+      }
+
+      io.to(String(updatedMessage.sender)).emit("message-edited", {
+        messageId,
+        newMessage,
+      });
+      io.to(String(updatedMessage.receiver)).emit("message-edited", {
+        messageId,
+        newMessage,
+      });
+    } catch (error) {
+      console.error("Error editing message:", error.message);
+      socket.emit("message-edit-error", {
+        messageId,
+        error: "Failed to edit message",
+      });
+    }
+  });
+};
+
+//////////////////////////////////
+
 // Delete Message
 
 //////////////////////////////////
@@ -77,5 +121,6 @@ const deleteMessage = (io, socket) => {
 module.exports = {
   allMessages,
   editeMessage,
+  editMessage,
   deleteMessage,
 };

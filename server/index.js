@@ -8,7 +8,7 @@ const mongoose = require("mongoose");
 const Message = require("./src/models/messages.models");
 const userRoutes = require("./src/routes/users.routes");
 const messageRouter = require("./src/routes/messages.routes");
-const { deleteMessage } = require("./src/controller/messages.controller");
+const { deleteMessage, editMessage } = require("./src/controller/messages.controller");
 const app = express();
 
 // all the middlewares
@@ -45,16 +45,16 @@ io.on("connection", (socket) => {
             message,
         });
 
-        if (sender === receiver) {
-            io.to(sender).emit("receive-message", { message, sender });
-        } else {
-            io.to(receiver).emit("receive-message", { message, sender, receiver });
-        }
+        io.to(String(sender)).emit("receive-message", messageCreate);
+        io.to(String(receiver)).emit("receive-message", messageCreate);
     } catch (error) {
         console.error("Error in send-message:", error.message);
         socket.emit("message-error", { error: "حصل خطأ أثناء إرسال الرسالة" });
     }
 });
+
+   ///////// edit message ///////////
+   editMessage(io, socket);
 
    ///////// delete message ///////////
    deleteMessage(io, socket);
