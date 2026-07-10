@@ -39,21 +39,40 @@ const editeMessage = async (req, res) => {
   }
 };
 
-const deleteMessage = async (req, res) => {
-  try {
-    const { id } = req.params;
+//////////////////////////////////
 
-    const deletedMessage = await Message.findByIdAndDelete(id);
+// Delete Message
 
-    if (!deletedMessage) {
-      return res.status(404).json({ message: "Message not found" });
+//////////////////////////////////
+const deleteMessage = (io, socket) => {
+  socket.on("delete-message", async ({ messageId }) => {
+    try {
+      const deletedMessage = await Message.findByIdAndUpdate(
+        messageId,
+        { isDeleted: true },
+        { new: true }
+      );
+
+      if (!deletedMessage) {
+        socket.emit("message-delete-error", {
+          messageId,
+          error: "Message not found",
+        });
+        return;
+      }
+
+    //   io.to(String(deletedMessage.sender)).emit("message-deleted", { messageId });
+      io.to(String(deletedMessage.receiver)).emit("message-deleted", { messageId });
+    } catch (error) {
+      console.error("Error deleting message:", error.message);
+      socket.emit("message-delete-error", {
+        messageId,
+        error: "Failed to delete message",
+      });
     }
-
-    res.status(200).json({ message: "Message deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  });
 };
+
 
 module.exports = {
   allMessages,

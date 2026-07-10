@@ -1,21 +1,36 @@
 import { useState, useRef, useEffect } from 'react';
+import api from '../Api/axios';
 
-const MessageOptions = ({ onEdit, onDelete, openUpward }) => {
+const MessageOptions = ({ message, openUpward, setCheckDelete, setAllMessages, socket, selectedUser }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
-
+  const currentUser = JSON.parse(localStorage.getItem('user'));
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setIsOpen(false);
       }
-    };
+    };  
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+
+  // delete message function
+const handleDeleteMessage = (msg) => {
+  setAllMessages((prev) =>
+    prev.map((m) => (m._id === msg?._id ? { ...m, isDeleted: true } : m))
+  );
+  // setCheckDelete(msg?._id);
+  // send delete request to server
+  socket.emit('delete-message', {
+    messageId: msg?._id,
+  });
+};
+
   return (
-    <div ref={menuRef} className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+    <div className="">
+          {currentUser === message?.sender &&   <div ref={menuRef} className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition"
@@ -44,7 +59,7 @@ const MessageOptions = ({ onEdit, onDelete, openUpward }) => {
           </button>
           <button
             onClick={() => {
-              onDelete();
+              handleDeleteMessage(message);
               setIsOpen(false);
             }}
             className="w-full text-right px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition whitespace-nowrap"
@@ -53,7 +68,12 @@ const MessageOptions = ({ onEdit, onDelete, openUpward }) => {
           </button>
         </div>
       )}
+    </div>}
+
     </div>
+
+     
+  
   );
 };
 

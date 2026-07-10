@@ -7,5 +7,5 @@ const router = Router();
 
 router.get("/",auth, allMessages);     
 router.patch("/editeMessage/:id",auth, editeMessage);
-router.delete("/deleteMessage/:id",auth, deleteMessage);
-module.exports = router;
+// router.delete("/:id",auth, deleteMessage);
+module.exports = router;    

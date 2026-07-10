@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const Message = require("./src/models/messages.models");
 const userRoutes = require("./src/routes/users.routes");
 const messageRouter = require("./src/routes/messages.routes");
+const { deleteMessage } = require("./src/controller/messages.controller");
 const app = express();
 
 // all the middlewares
@@ -55,6 +56,8 @@ io.on("connection", (socket) => {
     }
 });
 
+   ///////// delete message ///////////
+   deleteMessage(io, socket);
     socket.on("disconnect", () => {
         console.log("User Disconnected");
     });
