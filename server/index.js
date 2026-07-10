@@ -6,7 +6,7 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const userRoutes = require("./src/routes/users.routes");
-
+const messageRouter = require("./src/routes/messages.routes");
 const app = express();
 
 // all the middlewares
@@ -17,6 +17,7 @@ app.use(express.json());
 
 // routes
 app.use("/api/users", userRoutes);
+app.use("/api/messages", messageRouter);
 
 
 const server = http.createServer(app);
@@ -34,12 +35,24 @@ io.on("connection", (socket) => {
     socket.on("join-room", (roomId) => {
         socket.join(roomId);
     });
-    socket.on("send-message", async ({ message, receiver, sender }) => {
+   socket.on("send-message", async ({ message, receiver, sender }) => {
+    try {
+        const messageCreate = await Message.create({
+            sender,
+            receiver,
+            message,
+        });
 
-
-        io.to(receiver).emit("receive-message", { message, sender, receiver });
-
-    });
+        if (sender === receiver) {
+            io.to(sender).emit("receive-message", { message, sender });
+        } else {
+            io.to(receiver).emit("receive-message", { message, sender, receiver });
+        }
+    } catch (error) {
+        console.error("Error in send-message:", error.message);
+        socket.emit("message-error", { error: "حصل خطأ أثناء إرسال الرسالة" });
+    }
+});
 
     socket.on("disconnect", () => {
         console.log("User Disconnected");
