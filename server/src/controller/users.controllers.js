@@ -1,4 +1,4 @@
- const User = require("../models/user.model");
+ const User = require("../models/users.models");
  const bcrypt = require("bcrypt");
  const jwt = require("jsonwebtoken");
  //////////////////////////////////
@@ -75,7 +75,7 @@
       });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY);
+    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY || "secret-key");
 
     res.status(200).json({
       message: "Login successful",

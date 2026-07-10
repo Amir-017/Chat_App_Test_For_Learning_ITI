@@ -1,4 +1,4 @@
-const Message = require("../models/message.model");
+const Message = require("../models/messages.models");
 ////////////////////////////////
 
  // Get All Messages
@@ -39,4 +39,24 @@ const editeMessage = async (req, res) => {
   }
 };
 
-exports.allMessages = allMessages;
+const deleteMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedMessage = await Message.findByIdAndDelete(id);
+
+    if (!deletedMessage) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    res.status(200).json({ message: "Message deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  allMessages,
+  editeMessage,
+  deleteMessage,
+};

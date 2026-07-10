@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const Message = require("./src/models/messages.models");
 const userRoutes = require("./src/routes/users.routes");
 const messageRouter = require("./src/routes/messages.routes");
 const app = express();
@@ -66,7 +67,9 @@ mongoose.connect("mongodb://localhost:27017/chat-app").then(() => {
 })
 
 // start the server
-server.listen(3000, () => {
-    console.log("Server Running at Port 3000");
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
+    console.log(`Server Running at Port ${PORT}`);
 });
 
