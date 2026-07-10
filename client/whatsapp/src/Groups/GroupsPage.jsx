@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import api from "../Api/axios";
+import MessageOptions from "../Chat/MessageOption";
 
 export const GroupsPage = () => {
   const socket = useMemo(() => io("http://localhost:3000"), []);
@@ -274,17 +275,34 @@ export const GroupsPage = () => {
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
               {selectedGroupMessages.map((msg) => {
                 const isSender = String(msg.sender) === currentUserId;
+                const isDeleted = Boolean(msg.isDeleted);
                 return (
-                  <div key={msg._id} className={`flex ${isSender ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] rounded-2xl px-4 py-2 shadow-sm ${isSender ? "bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-tr-none text-slate-950" : "bg-slate-900/80 border border-white/10 rounded-tl-none text-slate-100"}`}>
+                  <div key={msg._id} className={`w-full flex items-center gap-2 group ${isSender ? "justify-end" : "justify-start"}`}>
+                    <MessageOptions
+                      openUpward={false}
+                      message={msg}
+                      setCheckDelete={() => { }}
+                      setAllMessages={setAllMessages}
+                      socket={socket}
+                      selectedUser={null}
+                      onEdit={handleEditMessage}
+                    />
+                    <div className={`max-w-[75%] rounded-2xl px-4 py-2 shadow-sm ${isDeleted ? "bg-white/5 border border-white/10 text-slate-400" : isSender ? "bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-tr-none text-slate-950" : "bg-slate-900/80 border border-white/10 rounded-tl-none text-slate-100"}`}>
                       {!isSender && selectedGroup && (
                         <div className="text-[11px] font-semibold text-emerald-300/80 mb-1">
                           {allUsers.find((user) => String(user._id) === String(msg.sender))?.name || "Unknown"}
                         </div>
                       )}
-                      <p className="text-sm whitespace-pre-wrap break-words text-inherit">{msg.message}</p>
-                      {msg.isEdited && <div className="mt-1 text-[10px] italic text-slate-400 text-right">edited</div>}
-                      {msg.isDeleted && <div className="mt-1 text-[10px] italic text-slate-400 text-right">deleted</div>}
+                      {isDeleted ? (
+                        <p className="text-sm italic whitespace-pre-wrap break-words text-slate-400">
+                          تم حذف هذه الرسالة
+                        </p>
+                      ) : (
+                        <>
+                          <p className="text-sm whitespace-pre-wrap break-words text-inherit">{msg.message}</p>
+                          {msg.isEdited && <div className="mt-1 text-[10px] italic text-slate-400 text-right">edited</div>}
+                        </>
+                      )}
                     </div>
                   </div>
                 );

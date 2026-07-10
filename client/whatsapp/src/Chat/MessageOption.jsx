@@ -29,10 +29,10 @@ const handleDeleteMessage = (msg) => {
 
   return (
     <div className="">
-          {currentUser === String(message?.sender) &&   <div ref={menuRef} className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          {currentUser === String(message?.sender) && (message?.isDeleted === false) &&   <div ref={menuRef} className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="text-slate-400 hover:text-slate-100 p-1 rounded-full hover:bg-white/10 transition"
+        className="text-start text-slate-400 hover:text-slate-100 p-1 rounded-full hover:bg-white/10 transition"
       >
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="6" r="1.5" />
@@ -47,6 +47,7 @@ const handleDeleteMessage = (msg) => {
             openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
           }`}
         >
+          
           <button
             onClick={() => {
               onEdit(message);
