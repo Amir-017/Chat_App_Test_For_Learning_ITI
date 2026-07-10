@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
-import { io } from "socket.io-client";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { Login } from "./Auth/Login";
 import { Chat } from "./Chat/Chat";
 import { Register } from "./Auth/Register";
 import { Header } from "./components/Header";
+import { GroupsPage } from "./Groups/GroupsPage";
 
 export default function App  (){
 const location = useLocation();
@@ -17,6 +16,7 @@ const location = useLocation();
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Login />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/groups" element={<GroupsPage />} />
       </Routes>
 
     </div>

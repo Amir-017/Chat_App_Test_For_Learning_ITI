@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 const MessageOptions = ({ message, openUpward, setCheckDelete, setAllMessages, socket, selectedUser, onEdit }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
-  const currentUser = JSON.parse(localStorage.getItem('user'));
+  const currentUser = String(JSON.parse(localStorage.getItem('user')));
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -29,10 +29,10 @@ const handleDeleteMessage = (msg) => {
 
   return (
     <div className="">
-          {currentUser === message?.sender &&   <div ref={menuRef} className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          {currentUser === String(message?.sender) &&   <div ref={menuRef} className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition"
+        className="text-slate-400 hover:text-slate-100 p-1 rounded-full hover:bg-white/10 transition"
       >
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="6" r="1.5" />
@@ -43,7 +43,7 @@ const handleDeleteMessage = (msg) => {
 
       {isOpen && (
         <div
-          className={`absolute left-0 w-fit min-w-[110px] bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-20 ${
+          className={`absolute left-0 w-fit min-w-[110px] rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.45)] border border-white/10 overflow-hidden z-20 bg-slate-950/95 backdrop-blur-xl ${
             openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
           }`}
         >
@@ -52,7 +52,7 @@ const handleDeleteMessage = (msg) => {
               onEdit(message);
               setIsOpen(false);
             }}
-            className="w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition whitespace-nowrap"
+            className="w-full text-right px-4 py-2 text-sm text-slate-100 hover:bg-white/10 transition whitespace-nowrap"
           >
             Edit
           </button>
@@ -61,7 +61,7 @@ const handleDeleteMessage = (msg) => {
               handleDeleteMessage(message);
               setIsOpen(false);
             }}
-            className="w-full text-right px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition whitespace-nowrap"
+            className="w-full text-right px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 transition whitespace-nowrap"
           >
             Delete
           </button>

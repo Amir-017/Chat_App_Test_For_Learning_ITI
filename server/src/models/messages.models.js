@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 const messageSchema = new mongoose.Schema(
   {
+    conversationType: {
+      type: String,
+      enum: ["direct", "group"],
+      default: "direct",
+    },
+
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -10,7 +16,13 @@ const messageSchema = new mongoose.Schema(
     receiver: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null,
+    },
+
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Group",
+      default: null,
     },
 
     message: {
