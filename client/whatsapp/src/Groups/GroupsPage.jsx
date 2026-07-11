@@ -12,6 +12,7 @@ import { GroupMessageInput } from "../components/group/GroupMessageInput";
 export const GroupsPage = () => {
     const socket = useMemo(() => io("http://localhost:3000"), []);
     const inputRef = useRef(null);
+    const imageInputRef = useRef(null);
     const currentUserId = String(JSON.parse(localStorage.getItem("user")));
     const [allUsers, setAllUsers] = useState([]);
     const [groups, setGroups] = useState([]);
@@ -203,6 +204,17 @@ export const GroupsPage = () => {
         setSelectedGroup(data.group);
     };
 
+    // Uploads an image to the currently open group; the server saves it and broadcasts it over the socket
+    const handleSendImage = async (file) => {
+        if (!file || !selectedGroup || isRemovedFromSelectedGroup) return;
+
+        const formData = new FormData();
+        formData.append("image", file);
+        formData.append("groupId", selectedGroup._id);
+
+        await api.post("api/messages/upload-image", formData);
+    };
+
     // Puts a message into "edit mode" and focuses the input box
     const handleEditMessage = (msg) => {
         setEditingMessage(msg);
@@ -263,11 +275,13 @@ export const GroupsPage = () => {
 
                         <GroupMessageInput
                             inputRef={inputRef}
+                            imageInputRef={imageInputRef}
                             message={message}
                             setMessage={setMessage}
                             onSubmit={handleSendMessage}
                             editingMessage={editingMessage}
                             onCancelEdit={cancelEdit}
+                            onSendImage={handleSendImage}
                             selectedGroup={selectedGroup}
                             isRemovedFromSelectedGroup={isRemovedFromSelectedGroup}
                         />

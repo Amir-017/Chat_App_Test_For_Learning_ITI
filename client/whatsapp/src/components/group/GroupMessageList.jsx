@@ -43,7 +43,15 @@ export const GroupMessageList = ({
                 </p>
               ) : (
                 <>
-                  <p className="text-sm whitespace-pre-wrap break-words text-inherit">{msg.message}</p>
+                  {msg.image?.url && (
+                    <img
+                      src={msg.image.url}
+                      alt="attachment"
+                      loading="lazy"
+                      className="max-w-full max-h-72 rounded-xl mb-1 object-cover"
+                    />
+                  )}
+                  {msg.message && <p className="text-sm whitespace-pre-wrap break-words text-inherit">{msg.message}</p>}
                   {msg.isEdited && <div className="mt-1 text-[10px] italic text-slate-400 text-right">edited</div>}
                 </>
               )}

@@ -1,13 +1,23 @@
 export const GroupMessageInput = ({
   inputRef,
+  imageInputRef,
   message,
   setMessage,
   onSubmit,
   editingMessage,
   onCancelEdit,
+  onSendImage,
   selectedGroup,
   isRemovedFromSelectedGroup,
 }) => {
+  const isChatDisabled = !selectedGroup || isRemovedFromSelectedGroup;
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) onSendImage(file);
+    e.target.value = "";
+  };
+
   return (
     <form onSubmit={onSubmit} className="bg-slate-950/90 px-4 py-3 border-t border-white/10 flex items-center gap-3">
       {editingMessage && (
@@ -15,11 +25,23 @@ export const GroupMessageInput = ({
           Cancel edit
         </button>
       )}
+      <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+      <button
+        type="button"
+        disabled={isChatDisabled}
+        onClick={() => imageInputRef.current?.click()}
+        className="shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        title="Send image"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 6h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z" />
+        </svg>
+      </button>
       <input
         ref={inputRef}
         type="text"
         value={message}
-        disabled={!selectedGroup || isRemovedFromSelectedGroup}
+        disabled={isChatDisabled}
         onChange={(e) => setMessage(e.target.value)}
         placeholder={
           editingMessage

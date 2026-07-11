@@ -19,6 +19,7 @@ export const Chat = () => {
     const [groupMembers, setGroupMembers] = useState([]);
     const [editingMessage, setEditingMessage] = useState(null);
     const inputRef = useRef(null);
+    const imageInputRef = useRef(null);
     const socket = useMemo(() => io("http://localhost:3000"), []);
     const currentUserId = String(JSON.parse(localStorage.getItem("user")));
     const isRemovedFromSelectedGroup = selectedGroup && selectedGroup.removedMembers.some((member) => String(member) === currentUserId);
@@ -211,6 +212,21 @@ export const Chat = () => {
         setMessage("");
     };
 
+    // Uploads an image to the selected user or group; the server saves it and broadcasts it over the socket
+    const handleSendImage = async (file) => {
+        if (!file || (!selectedUser && !selectedGroup) || (selectedGroup && isRemovedFromSelectedGroup)) return;
+
+        const formData = new FormData();
+        formData.append("image", file);
+        if (selectedGroup) {
+            formData.append("groupId", selectedGroup._id);
+        } else {
+            formData.append("receiver", selectedUser._id);
+        }
+
+        await api.post("api/messages/upload-image", formData);
+    };
+
     // Puts a message into "edit mode" and focuses the input box
     const handleEditMessage = (msg) => {
         setEditingMessage(msg);
@@ -299,11 +315,13 @@ export const Chat = () => {
 
                 <ChatMessageInput
                     inputRef={inputRef}
+                    imageInputRef={imageInputRef}
                     message={message}
                     setMessage={setMessage}
                     onSubmit={handleSendMessage}
                     editingMessage={editingMessage}
                     onCancelEdit={cancelEdit}
+                    onSendImage={handleSendImage}
                     selectedUser={selectedUser}
                     selectedGroup={selectedGroup}
                     isRemovedFromSelectedGroup={isRemovedFromSelectedGroup}

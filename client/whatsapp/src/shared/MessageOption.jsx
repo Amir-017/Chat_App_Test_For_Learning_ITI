@@ -48,15 +48,17 @@ const handleDeleteMessage = (msg) => {
           }`}
         >
           
-          <button
-            onClick={() => {
-              onEdit(message);
-              setIsOpen(false);
-            }}
-            className="w-full text-right px-4 py-2 text-sm text-slate-100 hover:bg-white/10 transition whitespace-nowrap"
-          >
-            Edit
-          </button>
+          {!message?.image?.url && (
+            <button
+              onClick={() => {
+                onEdit(message);
+                setIsOpen(false);
+              }}
+              className="w-full text-right px-4 py-2 text-sm text-slate-100 hover:bg-white/10 transition whitespace-nowrap"
+            >
+              Edit
+            </button>
+          )}
           <button
             onClick={() => {
               handleDeleteMessage(message);

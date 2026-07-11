@@ -1,5 +1,6 @@
 const Message = require("../models/messages.models");
 const Group = require("../models/groups.models");
+const cloudinary = require("../config/cloudinary");
 ////////////////////////////////
 
  // Get All Messages
@@ -25,6 +26,70 @@ const allMessages = async (req, res) => {
     }).sort({ createdAt: 1 });
 
     res.status(200).json(messages);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//////////////////////////////////
+
+ // Upload Message Image (direct or group)
+
+//////////////////////////////////
+const uploadMessageImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+
+    const { receiver, groupId, caption } = req.body;
+    const sender = req.user.id;
+
+    if (!receiver && !groupId) {
+      return res.status(400).json({ message: "receiver or groupId is required" });
+    }
+
+    if (groupId) {
+      const group = await Group.findById(groupId);
+      if (!group) {
+        return res.status(404).json({ message: "Group not found" });
+      }
+
+      const isMember = group.members.some((member) => String(member) === String(sender));
+      if (!isMember) {
+        return res.status(403).json({ message: "You are not a member of this group" });
+      }
+    }
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "whatsapp-chat", resource_type: "image" },
+        (error, result) => (error ? reject(error) : resolve(result))
+      );
+      stream.end(req.file.buffer);
+    });
+
+    const newMessage = await Message.create({
+      sender,
+      receiver: groupId ? null : receiver,
+      group: groupId || null,
+      conversationType: groupId ? "group" : "direct",
+      message: caption?.trim() || "",
+      image: { url: uploadResult.secure_url, publicId: uploadResult.public_id },
+    });
+
+    const io = req.app.get("io");
+
+    if (groupId) {
+      io.to(String(groupId)).emit("group-message", newMessage);
+    } else {
+      io.to(String(sender)).emit("receive-message", newMessage);
+      if (String(receiver) !== String(sender)) {
+        io.to(String(receiver)).emit("receive-message", newMessage);
+      }
+    }
+
+    res.status(201).json(newMessage);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -147,6 +212,7 @@ const deleteMessage = (io, socket) => {
 
 module.exports = {
   allMessages,
+  uploadMessageImage,
   editeMessage,
   editMessage,
   deleteMessage,

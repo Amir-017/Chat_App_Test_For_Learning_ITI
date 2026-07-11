@@ -27,8 +27,13 @@ const messageSchema = new mongoose.Schema(
 
     message: {
       type: String,
-      required: true,
       trim: true,
+      default: "",
+    },
+
+    image: {
+      url: { type: String, default: null },
+      publicId: { type: String, default: null },
     },
 
     isSeen: {
@@ -52,5 +57,11 @@ const messageSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+messageSchema.pre("validate", function () {
+  if (!this.message?.trim() && !this.image?.url) {
+    throw new Error("Message must contain text or an image");
+  }
+});
 
 module.exports = mongoose.model("Message", messageSchema);

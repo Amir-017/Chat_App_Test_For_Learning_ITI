@@ -42,9 +42,19 @@ export const ChatMessageList = ({
                                     </div>
                                 )}
                                 <div className={`min-w-0 rounded-2xl px-4 py-2 shadow-sm ${isSender ? "bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-tr-none text-slate-950" : "bg-slate-900/80 border border-white/10 rounded-tl-none text-slate-100"}`}>
-                                    <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
-                                        {msg.message}
-                                    </p>
+                                    {msg.image?.url && (
+                                        <img
+                                            src={msg.image.url}
+                                            alt="attachment"
+                                            loading="lazy"
+                                            className="max-w-full max-h-72 rounded-xl mb-1 object-cover"
+                                        />
+                                    )}
+                                    {msg.message && (
+                                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
+                                            {msg.message}
+                                        </p>
+                                    )}
                                     <p className="text-[10px] text-gray-200 mt-1 text-right">
                                         {msg.createdAt &&
                                             new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
@@ -62,9 +72,19 @@ export const ChatMessageList = ({
                         ) : isSender ? (
                             <div className="flex justify-end ">
                                 <div className="min-w-0 rounded-2xl rounded-tr-none bg-gradient-to-br from-emerald-500 to-cyan-500 px-4 py-2 shadow-lg text-slate-950">
-                                    <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
-                                        {msg.message}
-                                    </p>
+                                    {msg.image?.url && (
+                                        <img
+                                            src={msg.image.url}
+                                            alt="attachment"
+                                            loading="lazy"
+                                            className="max-w-full max-h-72 rounded-xl mb-1 object-cover"
+                                        />
+                                    )}
+                                    {msg.message && (
+                                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
+                                            {msg.message}
+                                        </p>
+                                    )}
                                     <p className="text-[10px] text-gray-200 mt-1 text-right">
                                         {msg.createdAt &&
                                             new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
@@ -82,9 +102,19 @@ export const ChatMessageList = ({
                         ) : (
                             <div className="flex justify-start max-w-[75%]">
                                 <div className="min-w-0 rounded-2xl rounded-tl-none bg-slate-900/80 px-4 py-2 shadow-lg text-slate-100 border border-white/10">
-                                    <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
-                                        {msg.message}
-                                    </p>
+                                    {msg.image?.url && (
+                                        <img
+                                            src={msg.image.url}
+                                            alt="attachment"
+                                            loading="lazy"
+                                            className="max-w-full max-h-72 rounded-xl mb-1 object-cover"
+                                        />
+                                    )}
+                                    {msg.message && (
+                                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
+                                            {msg.message}
+                                        </p>
+                                    )}
                                     <p className="text-[10px] text-gray-200 mt-1 text-right">
                                         {msg.createdAt &&
                                             new Date(msg.createdAt).toLocaleTimeString('ar-EG', {

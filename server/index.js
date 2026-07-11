@@ -1,10 +1,14 @@
 // require modules
+const dotenv = require("dotenv");
+dotenv.config();
+
 const express = require("express");
 const http = require("http");
-const dotenv = require("dotenv");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./src/config/swagger");
 const Message = require("./src/models/messages.models");
 const Group = require("./src/models/groups.models");
 const userRoutes = require("./src/routes/users.routes");
@@ -14,16 +18,26 @@ const { deleteMessage, editMessage } = require("./src/controller/messages.contro
 const app = express();
 
 // all the middlewares
-dotenv.config();
 app.use(cors());
 app.use(express.json());
 
+
+// api docs (swagger)
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/api-docs.json", (req, res) => res.json(swaggerSpec));
 
 // routes
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRouter);
 app.use("/api/groups", groupRouter);
 
+// Catches multer/cloudinary upload errors (bad file type, too large, etc.) and returns JSON instead of an HTML error page
+app.use((error, req, res, next) => {
+    if (error) {
+        return res.status(400).json({ message: error.message });
+    }
+    next();
+});
 
 const server = http.createServer(app);
 
