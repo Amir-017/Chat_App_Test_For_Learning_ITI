@@ -64,8 +64,7 @@ io.on("connection", (socket) => {
                 io.to(String(sender)).emit("receive-message", messageCreate);
                 io.to(String(receiver)).emit("receive-message", messageCreate);
             }
-            // io.to(String(sender)).emit("receive-message", messageCreate);
-            // io.to(String(receiver)).emit("receive-message", messageCreate);
+
         } catch (error) {
             console.error("Error in send-message:", error.message);
             socket.emit("message-error", { error: "حصل خطأ أثناء إرسال الرسالة" });
