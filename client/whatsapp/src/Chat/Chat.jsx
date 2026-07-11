@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import MessageOptions from "./MessageOption";
 import api from "../Api/axios";
+import { ChatHeader } from "../components/chat/ChatHeader";
+import { ChatMessageList } from "../components/chat/ChatMessageList";
+import { ChatMessageInput } from "../components/chat/ChatMessageInput";
+import { ChatSidebar } from "../components/chat/ChatSidebar";
+import { CreateGroupModal } from "../components/chat/CreateGroupModal";
 
 export const Chat = () => {
     const [message, setMessage] = useState("");
@@ -22,25 +26,31 @@ export const Chat = () => {
         return allusers.find((user) => String(user._id) === String(userId))?.name || "Unknown";
     };
 
+    // Joins the socket room for every group in the list, used on load and whenever the group list changes
     const joinAllGroups = (groupList) => {
         groupList.forEach((group) => {
             socket.emit("join-group", group._id);
         });
     };
 
+    // Sets up all socket listeners (new messages, edits, deletes, group changes) and cleans them up on unmount
     useEffect(() => {
+        // Runs once the socket actually connects, joins our personal room so private events can reach us
         socket.on("connect", () => {
             socket.emit("join-room", currentUserId);
         });
 
+        // A new direct message was sent to us - add it to our messages list
         socket.on("receive-message", (messageData) => {
             setAllMessages((prev) => [...prev, messageData]);
         });
 
+        // A new message was sent in a group we're part of - add it to our messages list
         socket.on("group-message", (messageData) => {
             setAllMessages((prev) => [...prev, messageData]);
         });
 
+        // Someone edited a message - update its text and mark it as edited in our local list
         socket.on("message-edited", ({ messageId, newMessage }) => {
             setAllMessages((prev) =>
                 prev.map((msg) =>
@@ -51,12 +61,14 @@ export const Chat = () => {
             );
         });
 
+        // Someone deleted a message - mark it as deleted locally (soft delete, not removed)
         socket.on("message-deleted", ({ messageId }) => {
             setAllMessages((prev) =>
                 prev.map((msg) => (msg._id === messageId ? { ...msg, isDeleted: true } : msg))
             );
         });
 
+        // A new group was created and we're a member - add it to our groups list and join its room
         socket.on("group-created", (group) => {
             const groupMemberIds = (group.members || []).map((member) => String(member._id || member));
 
@@ -72,6 +84,7 @@ export const Chat = () => {
             socket.emit("join-group", group._id);
         });
 
+        // A group's members changed - sync our local copy, or drop it and leave the room if we got removed
         socket.on("group-updated", (group) => {
             const groupMemberIds = (group.members || []).map((member) => String(member._id || member));
 
@@ -99,6 +112,7 @@ export const Chat = () => {
             console.error(error);
         });
 
+        // Cleanup: remove all these listeners when the component unmounts or this effect re-runs
         return () => {
             socket.off("receive-message");
             socket.off("group-message");
@@ -111,18 +125,21 @@ export const Chat = () => {
         };
     }, [socket, currentUserId]);
 
+    // Runs once on page load to fetch users, groups, and messages
     useEffect(() => {
         getAllUsers();
         getAllGroups();
         getAllMessages();
     }, []);
 
+    // Joins the socket room for every group whenever the group list changes
     useEffect(() => {
         if (groups.length > 0) {
             joinAllGroups(groups);
         }
     }, [groups]);
 
+    // Clears the input and any in-progress edit once no chat is selected
     useEffect(() => {
         if (!selectedUser && !selectedGroup) {
             setEditingMessage(null);
@@ -145,12 +162,15 @@ export const Chat = () => {
         setAllMessages(data);
     };
 
+    // Switches to a direct chat with this user and resets the input/edit state
     const handleSelectUser = (user) => {
         setSelectedUser(user);
         setSelectedGroup(null);
         setEditingMessage(null);
         setMessage("");
     }
+
+    // Switches to this group chat and resets the input/edit state
     const handleSelectGroup = (group) => {
         setSelectedGroup(group);
         setSelectedUser(null);
@@ -158,6 +178,7 @@ export const Chat = () => {
         setMessage("");
     };
 
+    // Sends a new message to the selected user or group, or saves changes if a message is being edited
     const handleSendMessage = (e) => {
         e.preventDefault();
 
@@ -190,12 +211,14 @@ export const Chat = () => {
         setMessage("");
     };
 
+    // Puts a message into "edit mode" and focuses the input box
     const handleEditMessage = (msg) => {
         setEditingMessage(msg);
         setMessage(msg.message);
         window.requestAnimationFrame(() => inputRef.current?.focus());
     };
 
+    // Adds or removes a user from the "create group" member selection
     const handleGroupMemberToggle = (userId) => {
         setGroupMembers((prev) => {
             if (prev.includes(userId)) {
@@ -206,6 +229,7 @@ export const Chat = () => {
         });
     };
 
+    // Creates a new group with the chosen name and members, then opens it
     const handleCreateGroup = async (e) => {
         e.preventDefault();
 
@@ -226,11 +250,13 @@ export const Chat = () => {
         setIsGroupModalOpen(false);
     };
 
+    // Cancels edit mode and clears the input box
     const cancelEdit = () => {
         setEditingMessage(null);
         setMessage("");
     };
 
+    // Filters all messages down to only the ones for the currently selected user or group
     const activeMessages = selectedGroup
         ? allMessages.filter(
             (msg) =>
@@ -256,297 +282,54 @@ export const Chat = () => {
         ? selectedGroup.name?.[0]?.toUpperCase() || "#"
         : selectedUser?.name?.[0]?.toUpperCase() || "?";
 
-    console.log(allMessages, "allMessages");
     return (
         <div className="flex h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
             <div className="w-4/5 flex flex-col bg-slate-950/65 border-r border-white/10 backdrop-blur-xl">
-                <div className="bg-slate-950/80 px-6 py-4 flex items-center gap-3 shadow-md border-b border-white/10">
-                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center text-slate-950 font-bold">
-                        {chatAvatar}
-                    </div>
-                    <div>
-                        <h2 className="text-white font-semibold text-lg">{chatTitle}</h2>
-                        {selectedGroup && <p className="text-emerald-300 text-xs">Group chat</p>}
-                    </div>
-                </div>
+                <ChatHeader chatAvatar={chatAvatar} chatTitle={chatTitle} selectedGroup={selectedGroup} />
 
-                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.03),transparent_20%)]">
-                    {activeMessages.map((msg, index) => {
-                        const isSender = String(msg.sender) === currentUserId;
-                        const isGroupMessage = msg.conversationType === "group";
+                <ChatMessageList
+                    messages={activeMessages}
+                    currentUserId={currentUserId}
+                    getUserName={getUserName}
+                    socket={socket}
+                    setAllMessages={setAllMessages}
+                    selectedUser={selectedUser}
+                    onEdit={handleEditMessage}
+                />
 
-                        return (
-                            <div
-                                key={msg._id}
-                                className={`w-full flex items-center gap-2 group ${isSender ? "justify-end" : "justify-start"}`}
-                            >
-                                <MessageOptions
-                                    openUpward={index > 2}
-                                    message={msg}
-                                    setCheckDelete={() => { }}
-                                    setAllMessages={setAllMessages}
-                                    socket={socket}
-                                    selectedUser={selectedUser}
-                                    onEdit={handleEditMessage}
-                                />
-
-                                {msg.isDeleted ? (
-                                    <p className="px-4 py-2 max-w-xs italic text-sm text-slate-400 bg-white/5 rounded-2xl border border-white/10">
-                                        تم حذف هذه الرسالة
-                                    </p>
-                                ) : isGroupMessage ? (
-                                    <div className={`flex flex-col max-w-[75%] ${isSender ? "" : "items-start"}`}>
-                                        {!isSender && (
-                                            <div className="px-2 pb-1 text-[11px] font-semibold text-emerald-300/80">
-                                                {getUserName(msg.sender)}
-                                            </div>
-                                        )}
-                                        <div className={`min-w-0 rounded-2xl px-4 py-2 shadow-sm ${isSender ? "bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-tr-none text-slate-950" : "bg-slate-900/80 border border-white/10 rounded-tl-none text-slate-100"}`}>
-                                            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
-                                                {msg.message}
-                                            </p>
-                                            <p className="text-[10px] text-gray-200 mt-1 text-right">
-                                                {msg.createdAt &&
-                                                    new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    })}
-                                            </p>
-                                            {msg.isEdited && (
-                                                <div className={`mt-1 text-[10px] italic ${isSender ? "text-slate-900/60" : "text-slate-400"} text-right`}>
-                                                    edited
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ) : isSender ? (
-                                    <div className="flex justify-end ">
-                                        <div className="min-w-0 rounded-2xl rounded-tr-none bg-gradient-to-br from-emerald-500 to-cyan-500 px-4 py-2 shadow-lg text-slate-950">
-                                            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
-                                                {msg.message}
-                                            </p>
-                                            <p className="text-[10px] text-gray-200 mt-1 text-right">
-                                                {msg.createdAt &&
-                                                    new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    })}
-                                            </p>
-                                            {msg.isEdited && (
-                                                <div className="mt-1 text-[10px] italic text-slate-900/60 text-right">
-                                                    edited
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex justify-start max-w-[75%]">
-                                        <div className="min-w-0 rounded-2xl rounded-tl-none bg-slate-900/80 px-4 py-2 shadow-lg text-slate-100 border border-white/10">
-                                            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
-                                                {msg.message}
-                                            </p>
-                                            <p className="text-[10px] text-gray-200 mt-1 text-right">
-                                                {msg.createdAt &&
-                                                    new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                    })}
-                                            </p>
-                                            {msg.isEdited && (
-                                                <div className="mt-1 text-[10px] italic text-slate-400 text-right">
-                                                    edited
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-
-                <form onSubmit={handleSendMessage} className="bg-slate-950/80 px-4 py-3 flex items-center gap-3 border-t border-white/10 backdrop-blur-xl">
-                    {editingMessage && (
-                        <button
-                            type="button"
-                            onClick={cancelEdit}
-                            className="text-xs font-semibold text-rose-400 hover:text-rose-300"
-                        >
-                            Cancel edit
-                        </button>
-                    )}
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        value={message}
-                        disabled={!(selectedUser || selectedGroup) || !!(selectedGroup && isRemovedFromSelectedGroup)}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder={
-                            selectedGroup && isRemovedFromSelectedGroup
-                                ? "تم إزالتك من هذا الجروب، مينفعش تبعت رسايل"
-                                : editingMessage
-                                    ? "عدّل الرسالة..."
-                                    : selectedGroup
-                                        ? "اكتب في الجروب..."
-                                        : "اكتب رسالة..."
-                        } className="flex-1 bg-white/5 text-slate-100 placeholder:text-slate-500 rounded-full px-5 py-3 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/70"
-                    />
-                    <button
-                        type="submit"
-                        className="bg-gradient-to-br from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 w-11 h-11 rounded-full flex items-center justify-center transition shadow-lg shadow-emerald-500/20"
-                    >
-                        {editingMessage ? (
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 5v14m-7-7h14" />
-                            </svg>
-                        ) : (
-                            <svg className="w-5 h-5 rotate-90" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                            </svg>
-                        )}
-                    </button>
-                </form>
+                <ChatMessageInput
+                    inputRef={inputRef}
+                    message={message}
+                    setMessage={setMessage}
+                    onSubmit={handleSendMessage}
+                    editingMessage={editingMessage}
+                    onCancelEdit={cancelEdit}
+                    selectedUser={selectedUser}
+                    selectedGroup={selectedGroup}
+                    isRemovedFromSelectedGroup={isRemovedFromSelectedGroup}
+                />
             </div>
 
-            <div className="w-1/5 bg-slate-950/85 border-l border-white/10 flex flex-col backdrop-blur-xl">
-                <div className="bg-slate-950/90 px-4 py-4 flex items-center justify-between gap-3 border-b border-white/10">
-                    <h2 className="text-white font-bold text-lg">المحادثات</h2>
-                    <button
-                        type="button"
-                        onClick={() => setIsGroupModalOpen(true)}
-                        className="bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition"
-                    >
-                        + Group
-                    </button>
-                </div>
+            <ChatSidebar
+                groups={groups}
+                selectedGroup={selectedGroup}
+                onSelectGroup={handleSelectGroup}
+                users={allusers}
+                selectedUser={selectedUser}
+                onSelectUser={handleSelectUser}
+                onOpenCreateGroup={() => setIsGroupModalOpen(true)}
+            />
 
-                <div className="flex-1 overflow-y-auto">
-                    <div className="px-4 py-3 border-b border-white/10 bg-white/5">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Groups</h3>
-                        <div className="space-y-2">
-                            {groups.map((group) => (
-                                <button
-                                    type="button"
-                                    key={group._id}
-                                    onClick={() => handleSelectGroup(group)}
-                                    className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl transition border ${selectedGroup?._id === group._id
-                                        ? "bg-emerald-500/15 border-emerald-400/30"
-                                        : "bg-white/5 border-white/10 hover:bg-white/10"
-                                        }`}
-                                >
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950 flex items-center justify-center font-bold shrink-0">
-                                        {group.name?.[0]?.toUpperCase() || "#"}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <div className="text-sm font-semibold text-slate-100 truncate">{group.name}</div>
-                                        <div className="text-[11px] text-slate-400">
-                                            {group.members?.length || 0} members
-                                        </div>
-                                    </div>
-                                </button>
-                            ))}
-                            {groups.length === 0 && (
-                                <div className="text-xs text-slate-400 px-1">No groups yet</div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="bg-white/5 px-4 py-4 border-t border-white/10">
-                        <h2 className="text-white font-bold text-lg">Direct Chats</h2>
-                    </div>
-
-                    {allusers.map((user) => (
-                        <div
-                            key={user._id}
-                            onClick={() => handleSelectUser(user)}
-                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-white/10 hover:bg-white/5 transition ${selectedUser?._id === user._id ? "bg-emerald-500/15" : ""
-                                }`}
-                        >
-                            <div className="w-11 h-11 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center text-slate-950 font-bold shrink-0">
-                                {user.name?.[0]?.toUpperCase()}
-                            </div>
-                            <span className="text-slate-100 font-medium truncate">{user.name}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {isGroupModalOpen && (
-                <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="w-full max-w-lg rounded-[28px] bg-slate-950 shadow-[0_24px_80px_rgba(0,0,0,0.6)] overflow-hidden border border-white/10">
-                        <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-lg font-bold text-white">Create Group</h3>
-                                <p className="text-xs text-slate-400">Choose a name and members</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsGroupModalOpen(false)}
-                                className="text-slate-400 hover:text-white text-2xl leading-none"
-                            >
-                                &times;
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleCreateGroup} className="p-5 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">Group name</label>
-                                <input
-                                    type="text"
-                                    value={groupName}
-                                    onChange={(e) => setGroupName(e.target.value)}
-                                    placeholder="e.g. Project Team"
-                                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/70"
-                                />
-                            </div>
-
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <label className="block text-sm font-medium text-slate-300">Members</label>
-                                    <span className="text-xs text-slate-500">{groupMembers.length} selected</span>
-                                </div>
-                                <div className="max-h-64 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-3 space-y-2">
-                                    {allusers
-                                        .filter((user) => String(user._id) !== currentUserId)
-                                        .map((user) => (
-                                            <label
-                                                key={user._id}
-                                                className="flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-white/10 cursor-pointer"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={groupMembers.includes(user._id)}
-                                                    onChange={() => handleGroupMemberToggle(user._id)}
-                                                    className="h-4 w-4 accent-emerald-400"
-                                                />
-                                                <span className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 text-slate-950 flex items-center justify-center font-bold text-sm">
-                                                    {user.name?.[0]?.toUpperCase()}
-                                                </span>
-                                                <span className="text-sm font-medium text-slate-100">{user.name}</span>
-                                            </label>
-                                        ))}
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsGroupModalOpen(false)}
-                                    className="px-4 py-2 rounded-2xl border border-white/10 text-sm font-semibold text-slate-300 hover:bg-white/5"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 text-sm font-semibold hover:from-emerald-400 hover:to-cyan-400"
-                                >
-                                    Create
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <CreateGroupModal
+                isOpen={isGroupModalOpen}
+                onClose={() => setIsGroupModalOpen(false)}
+                groupName={groupName}
+                setGroupName={setGroupName}
+                users={allusers.filter((user) => String(user._id) !== currentUserId)}
+                groupMembers={groupMembers}
+                onToggleMember={handleGroupMemberToggle}
+                onSubmit={handleCreateGroup}
+            />
         </div>
     );
 };
