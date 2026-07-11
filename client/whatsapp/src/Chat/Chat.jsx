@@ -17,7 +17,7 @@ export const Chat = () => {
     const inputRef = useRef(null);
     const socket = useMemo(() => io("http://localhost:3000"), []);
     const currentUserId = String(JSON.parse(localStorage.getItem("user")));
-
+    const isRemovedFromSelectedGroup = selectedGroup && selectedGroup.removedMembers.some((member) => String(member) === currentUserId);
     const getUserName = (userId) => {
         return allusers.find((user) => String(user._id) === String(userId))?.name || "Unknown";
     };
@@ -150,7 +150,7 @@ export const Chat = () => {
         setSelectedGroup(null);
         setEditingMessage(null);
         setMessage("");
-}
+    }
     const handleSelectGroup = (group) => {
         setSelectedGroup(group);
         setSelectedUser(null);
@@ -256,8 +256,7 @@ export const Chat = () => {
         ? selectedGroup.name?.[0]?.toUpperCase() || "#"
         : selectedUser?.name?.[0]?.toUpperCase() || "?";
 
-        console.log("selectedGroup:", selectedGroup);
-        console.log("selectedUser:", selectedUser);
+    console.log(allMessages, "allMessages");
     return (
         <div className="flex h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
             <div className="w-4/5 flex flex-col bg-slate-950/65 border-r border-white/10 backdrop-blur-xl">
@@ -278,7 +277,7 @@ export const Chat = () => {
 
                         return (
                             <div
-                                key={msg._id || index}
+                                key={msg._id}
                                 className={`w-full flex items-center gap-2 group ${isSender ? "justify-end" : "justify-start"}`}
                             >
                                 <MessageOptions
@@ -306,6 +305,13 @@ export const Chat = () => {
                                             <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
                                                 {msg.message}
                                             </p>
+                                            <p className="text-[10px] text-gray-200 mt-1 text-right">
+                                                {msg.createdAt &&
+                                                    new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    })}
+                                            </p>
                                             {msg.isEdited && (
                                                 <div className={`mt-1 text-[10px] italic ${isSender ? "text-slate-900/60" : "text-slate-400"} text-right`}>
                                                     edited
@@ -319,6 +325,13 @@ export const Chat = () => {
                                             <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
                                                 {msg.message}
                                             </p>
+                                            <p className="text-[10px] text-gray-200 mt-1 text-right">
+                                                {msg.createdAt &&
+                                                    new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    })}
+                                            </p>
                                             {msg.isEdited && (
                                                 <div className="mt-1 text-[10px] italic text-slate-900/60 text-right">
                                                     edited
@@ -331,6 +344,13 @@ export const Chat = () => {
                                         <div className="min-w-0 rounded-2xl rounded-tl-none bg-slate-900/80 px-4 py-2 shadow-lg text-slate-100 border border-white/10">
                                             <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-inherit">
                                                 {msg.message}
+                                            </p>
+                                            <p className="text-[10px] text-gray-200 mt-1 text-right">
+                                                {msg.createdAt &&
+                                                    new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    })}
                                             </p>
                                             {msg.isEdited && (
                                                 <div className="mt-1 text-[10px] italic text-slate-400 text-right">
@@ -359,10 +379,17 @@ export const Chat = () => {
                         ref={inputRef}
                         type="text"
                         value={message}
-                        disabled={!selectedUser && !selectedGroup}
+                        disabled={!(selectedUser || selectedGroup) || !!(selectedGroup && isRemovedFromSelectedGroup)}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder={editingMessage ? "عدّل الرسالة..." : selectedGroup ? "اكتب في الجروب..." : "اكتب رسالة..."}
-                        className="flex-1 bg-white/5 text-slate-100 placeholder:text-slate-500 rounded-full px-5 py-3 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/70"
+                        placeholder={
+                            selectedGroup && isRemovedFromSelectedGroup
+                                ? "تم إزالتك من هذا الجروب، مينفعش تبعت رسايل"
+                                : editingMessage
+                                    ? "عدّل الرسالة..."
+                                    : selectedGroup
+                                        ? "اكتب في الجروب..."
+                                        : "اكتب رسالة..."
+                        } className="flex-1 bg-white/5 text-slate-100 placeholder:text-slate-500 rounded-full px-5 py-3 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/70"
                     />
                     <button
                         type="submit"

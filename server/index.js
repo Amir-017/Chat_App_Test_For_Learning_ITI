@@ -58,14 +58,20 @@ io.on("connection", (socket) => {
                 message,
                 conversationType: "direct",
             });
-
-            io.to(String(sender)).emit("receive-message", messageCreate);
-            io.to(String(receiver)).emit("receive-message", messageCreate);
+            if (sender === receiver) {
+                io.to(String(sender)).emit("receive-message", messageCreate);
+            } else {
+                io.to(String(sender)).emit("receive-message", messageCreate);
+                io.to(String(receiver)).emit("receive-message", messageCreate);
+            }
+            // io.to(String(sender)).emit("receive-message", messageCreate);
+            // io.to(String(receiver)).emit("receive-message", messageCreate);
         } catch (error) {
             console.error("Error in send-message:", error.message);
             socket.emit("message-error", { error: "حصل خطأ أثناء إرسال الرسالة" });
         }
-    });
+    }
+    );
 
     socket.on("send-group-message", async ({ message, groupId, sender }) => {
         try {
@@ -96,11 +102,11 @@ io.on("connection", (socket) => {
         }
     });
 
-   ///////// edit message ///////////
-   editMessage(io, socket);
+    ///////// edit message ///////////
+    editMessage(io, socket);
 
-   ///////// delete message ///////////
-   deleteMessage(io, socket);
+    ///////// delete message ///////////
+    deleteMessage(io, socket);
     socket.on("disconnect", () => {
         console.log("User Disconnected");
     });
