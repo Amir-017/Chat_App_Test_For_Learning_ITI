@@ -1,16 +1,19 @@
+import { useTranslation } from "react-i18next";
+
 export const GroupsSidebar = ({ groups, selectedGroup, onSelectGroup, onOpenCreate, currentUserId }) => {
+  const { t } = useTranslation();
   return (
-    <div className="w-80 bg-slate-950/85 border-r border-white/10 flex flex-col backdrop-blur-xl">
+    <div className="w-80 bg-slate-950/85 border-e border-white/10 flex flex-col backdrop-blur-xl">
       <div className="px-4 py-4 bg-slate-950/90 text-white flex items-center justify-between border-b border-white/10">
         <div>
-          <h2 className="font-bold text-lg">Groups</h2>
-          <p className="text-xs text-emerald-50">Manage rooms and members</p>
+          <h2 className="font-bold text-lg">{t("groups.sidebar.title")}</h2>
+          <p className="text-xs text-emerald-50">{t("groups.sidebar.subtitle")}</p>
         </div>
         <button
           onClick={onOpenCreate}
           className="bg-white/10 hover:bg-white/20 border border-white/10 text-xs font-semibold px-3 py-2 rounded-full"
         >
-          + New
+          {t("groups.sidebar.newButton")}
         </button>
       </div>
 
@@ -19,7 +22,7 @@ export const GroupsSidebar = ({ groups, selectedGroup, onSelectGroup, onOpenCrea
           <button
             key={group._id}
             onClick={() => onSelectGroup(group)}
-            className={`w-full text-left p-3 rounded-2xl border transition ${
+            className={`w-full text-start p-3 rounded-2xl border transition ${
               selectedGroup?._id === group._id
                 ? "bg-emerald-500/15 border-emerald-400/30"
                 : "bg-white/5 border-white/10 hover:bg-white/10"
@@ -31,10 +34,10 @@ export const GroupsSidebar = ({ groups, selectedGroup, onSelectGroup, onOpenCrea
               </div>
               <div className="min-w-0">
                 <div className="font-semibold text-slate-100 truncate">{group.name}</div>
-                <div className="text-xs text-slate-400">{group.members?.length || 0} members</div>
+                <div className="text-xs text-slate-400">{t("common.members", { count: group.members?.length || 0 })}</div>
                 {(group.removedMembers || []).some((member) => String(member._id || member) === currentUserId) && (
                   <div className="mt-1 inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-300">
-                    removed
+                    {t("groups.sidebar.removedBadge")}
                   </div>
                 )}
               </div>

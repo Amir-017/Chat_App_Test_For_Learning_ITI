@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import MessageOptions from "../../shared/MessageOption";
 
 export const ChatMessageList = ({
@@ -9,6 +10,8 @@ export const ChatMessageList = ({
     selectedUser,
     onEdit,
 }) => {
+    const { t, i18n } = useTranslation();
+    const timeLocale = i18n.language === "ar" ? "ar-EG" : "en-US";
     return (
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.03),transparent_20%)]">
             {messages.map((msg, index) => {
@@ -33,7 +36,7 @@ export const ChatMessageList = ({
 
                         {msg.isDeleted ? (
                             <p className="px-4 py-2 max-w-xs italic text-sm text-slate-400 bg-white/5 rounded-2xl border border-white/10">
-                                تم حذف هذه الرسالة
+                                {t("common.messageDeleted")}
                             </p>
                         ) : isGroupMessage ? (
                             <div className={`flex flex-col max-w-[75%] ${isSender ? "" : "items-start"}`}>
@@ -56,16 +59,16 @@ export const ChatMessageList = ({
                                             {msg.message}
                                         </p>
                                     )}
-                                    <p className="text-[10px] text-gray-200 mt-1 text-right">
+                                    <p className="text-[10px] text-gray-200 mt-1 text-end">
                                         {msg.createdAt &&
-                                            new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
+                                            new Date(msg.createdAt).toLocaleTimeString(timeLocale, {
                                                 hour: '2-digit',
                                                 minute: '2-digit',
                                             })}
                                     </p>
                                     {msg.isEdited && (
-                                        <div className={`mt-1 text-[10px] italic ${isSender ? "text-slate-900/60" : "text-slate-400"} text-right`}>
-                                            edited
+                                        <div className={`mt-1 text-[10px] italic ${isSender ? "text-slate-900/60" : "text-slate-400"} text-end`}>
+                                            {t("common.edited")}
                                         </div>
                                     )}
                                 </div>
@@ -86,16 +89,16 @@ export const ChatMessageList = ({
                                             {msg.message}
                                         </p>
                                     )}
-                                    <p className="text-[10px] text-gray-200 mt-1 text-right">
+                                    <p className="text-[10px] text-gray-200 mt-1 text-end">
                                         {msg.createdAt &&
-                                            new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
+                                            new Date(msg.createdAt).toLocaleTimeString(timeLocale, {
                                                 hour: '2-digit',
                                                 minute: '2-digit',
                                             })}
                                     </p>
                                     {msg.isEdited && (
-                                        <div className="mt-1 text-[10px] italic text-slate-900/60 text-right">
-                                            edited
+                                        <div className="mt-1 text-[10px] italic text-slate-900/60 text-end">
+                                            {t("common.edited")}
                                         </div>
                                     )}
                                 </div>
@@ -116,16 +119,16 @@ export const ChatMessageList = ({
                                             {msg.message}
                                         </p>
                                     )}
-                                    <p className="text-[10px] text-gray-200 mt-1 text-right">
+                                    <p className="text-[10px] text-gray-200 mt-1 text-end">
                                         {msg.createdAt &&
-                                            new Date(msg.createdAt).toLocaleTimeString('ar-EG', {
+                                            new Date(msg.createdAt).toLocaleTimeString(timeLocale, {
                                                 hour: '2-digit',
                                                 minute: '2-digit',
                                             })}
                                     </p>
                                     {msg.isEdited && (
-                                        <div className="mt-1 text-[10px] italic text-slate-400 text-right">
-                                            edited
+                                        <div className="mt-1 text-[10px] italic text-slate-400 text-end">
+                                            {t("common.edited")}
                                         </div>
                                     )}
                                 </div>

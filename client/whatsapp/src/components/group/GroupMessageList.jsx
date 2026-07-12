@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import  MessageOptions  from "../../shared/MessageOption";
 export const GroupMessageList = ({
   messages,
@@ -8,6 +9,7 @@ export const GroupMessageList = ({
   setAllMessages,
   onEdit,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
       {messages.map((msg) => {
@@ -35,12 +37,12 @@ export const GroupMessageList = ({
             >
               {!isSender && selectedGroup && (
                 <div className="text-[11px] font-semibold text-emerald-300/80 mb-1">
-                  {allUsers.find((user) => String(user._id) === String(msg.sender))?.name || "Unknown"}
+                  {allUsers.find((user) => String(user._id) === String(msg.sender))?.name || t("common.unknown")}
                 </div>
               )}
               {isDeleted ? (
                 <p className="text-sm italic whitespace-pre-wrap break-words text-slate-400">
-                  تم حذف هذه الرسالة
+                  {t("common.messageDeleted")}
                 </p>
               ) : (
                 <>
@@ -53,7 +55,7 @@ export const GroupMessageList = ({
                     />
                   )}
                   {msg.message && <p className="text-sm whitespace-pre-wrap break-words text-inherit">{msg.message}</p>}
-                  {msg.isEdited && <div className="mt-1 text-[10px] italic text-slate-400 text-right">edited</div>}
+                  {msg.isEdited && <div className="mt-1 text-[10px] italic text-slate-400 text-end">{t("common.edited")}</div>}
                 </>
               )}
             </div>

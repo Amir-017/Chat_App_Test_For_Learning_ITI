@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const MessageOptions = ({ message, openUpward, setCheckDelete, setAllMessages, socket, selectedUser, onEdit, currentUserId }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   useEffect(() => {
@@ -8,7 +10,7 @@ const MessageOptions = ({ message, openUpward, setCheckDelete, setAllMessages, s
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setIsOpen(false);
       }
-    };  
+    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -42,20 +44,20 @@ const handleDeleteMessage = (msg) => {
 
       {isOpen && (
         <div
-          className={`absolute left-0 w-fit min-w-[110px] rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.45)] border border-white/10 overflow-hidden z-20 bg-slate-950/95 backdrop-blur-xl ${
+          className={`absolute start-0 w-fit min-w-[110px] rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.45)] border border-white/10 overflow-hidden z-20 bg-slate-950/95 backdrop-blur-xl ${
             openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
           }`}
         >
-          
+
           {!message?.image?.url && (
             <button
               onClick={() => {
                 onEdit(message);
                 setIsOpen(false);
               }}
-              className="w-full text-right px-4 py-2 text-sm text-slate-100 hover:bg-white/10 transition whitespace-nowrap"
+              className="w-full text-start px-4 py-2 text-sm text-slate-100 hover:bg-white/10 transition whitespace-nowrap"
             >
-              Edit
+              {t("common.edit")}
             </button>
           )}
           <button
@@ -63,9 +65,9 @@ const handleDeleteMessage = (msg) => {
               handleDeleteMessage(message);
               setIsOpen(false);
             }}
-            className="w-full text-right px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 transition whitespace-nowrap"
+            className="w-full text-start px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 transition whitespace-nowrap"
           >
-            Delete
+            {t("common.delete")}
           </button>
         </div>
       )}
@@ -73,8 +75,8 @@ const handleDeleteMessage = (msg) => {
 
     </div>
 
-     
-  
+
+
   );
 };
 

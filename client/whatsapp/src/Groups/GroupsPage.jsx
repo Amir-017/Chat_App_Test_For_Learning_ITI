@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import api from "../Api/axios";
 import { CreateGroupModal } from "../components/group/CreateGroupModel";
 import { GroupsSidebar } from "../components/group/GroupsSidebar";
@@ -9,6 +10,7 @@ import { GroupMessageInput } from "../components/group/GroupMessageInput";
 import { useAuthedSocket } from "../hooks/useAuthedSocket";
 
 export const GroupsPage = () => {
+    const { t } = useTranslation();
     const { socket, currentUserId, isReady } = useAuthedSocket();
     const inputRef = useRef(null);
     const imageInputRef = useRef(null);
@@ -240,7 +242,7 @@ export const GroupsPage = () => {
     if (!isReady) {
         return (
             <div className="flex h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
-                جاري التحميل...
+                {t("common.loading")}
             </div>
         );
     }
@@ -263,7 +265,7 @@ export const GroupsPage = () => {
                     <div className="bg-slate-950/65 rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.35)] border border-white/10 flex flex-col overflow-hidden backdrop-blur-xl">
                         {isRemovedFromSelectedGroup && (
                             <div className="mx-5 mt-5 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-                                انت اتحذفت من الجروب ده ومش هتقدر تبعت رسائل تاني.
+                                {t("groups.removedNotice")}
                             </div>
                         )}
                         <GroupMessageList

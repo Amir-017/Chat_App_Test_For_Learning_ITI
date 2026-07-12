@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import api from "../Api/axios";
 import { ChatHeader } from "../components/chat/ChatHeader";
 import { ChatMessageList } from "../components/chat/ChatMessageList";
@@ -8,6 +9,7 @@ import { CreateGroupModal } from "../components/chat/CreateGroupModal";
 import { useAuthedSocket } from "../hooks/useAuthedSocket";
 
 export const Chat = () => {
+    const { t } = useTranslation();
     const [message, setMessage] = useState("");
     const [allMessages, setAllMessages] = useState([]);
     const [allusers, setAllUsers] = useState([]);
@@ -302,7 +304,7 @@ export const Chat = () => {
         ? selectedGroup.name
         : selectedUser
             ? selectedUser.name
-            : "اختار شخص عشان تبدأ الشات";
+            : t("chat.chooseChat");
 
     const chatAvatar = selectedGroup
         ? selectedGroup.name?.[0]?.toUpperCase() || "#"
@@ -321,14 +323,14 @@ export const Chat = () => {
     if (!isReady) {
         return (
             <div className="flex h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
-                جاري التحميل...
+                {t("common.loading")}
             </div>
         );
     }
  console.log(selectedUser)
     return (
         <div className="flex h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
-            <div className="w-4/5 flex flex-col bg-slate-950/65 border-r border-white/10 backdrop-blur-xl">
+            <div className="w-4/5 flex flex-col bg-slate-950/65 border-e border-white/10 backdrop-blur-xl">
                 <ChatHeader chatAvatar={chatAvatar} chatTitle={chatTitle} selectedGroup={selectedGroup} selectedUser={selectedUser} />
 
                 <ChatMessageList

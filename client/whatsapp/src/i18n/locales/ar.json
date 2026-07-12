@@ -1,0 +1,85 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "remove": "إزالة",
+    "admin": "أدمن",
+    "unknown": "غير معروف",
+    "edited": "متعدّل",
+    "messageDeleted": "تم حذف هذه الرسالة",
+    "members_one": "عضو واحد",
+    "members_two": "عضوين",
+    "members_few": "{{count}} أعضاء",
+    "members_many": "{{count}} عضو",
+    "members_other": "{{count}} عضو",
+    "selected": "{{count}} متحدد",
+    "noUsersAvailable": "مفيش مستخدمين متاحين للإضافة",
+    "addSelectedUsers": "إضافة المستخدمين المحددين"
+  },
+  "header": {
+    "appTitle": "شات",
+    "navChat": "الشات",
+    "navGroups": "الجروبات",
+    "switchLanguage": "English"
+  },
+  "chat": {
+    "chooseChat": "اختار شخص عشان تبدأ الشات",
+    "sidebar": {
+      "title": "المحادثات",
+      "newGroup": "+ جروب",
+      "groupsLabel": "الجروبات",
+      "noGroups": "لسه مفيش جروبات",
+      "directChats": "الشاتات المباشرة"
+    },
+    "header": {
+      "groupChat": "شات جروب",
+      "online": "متصل الآن",
+      "lastSeenJustNow": "آخر ظهور الآن",
+      "lastSeenMinAgo_one": "آخر ظهور من دقيقة",
+      "lastSeenMinAgo_other": "آخر ظهور من {{count}} دقيقة",
+      "lastSeenHrAgo_one": "آخر ظهور من ساعة",
+      "lastSeenHrAgo_other": "آخر ظهور من {{count}} ساعة",
+      "lastSeenYesterday": "آخر ظهور إمبارح",
+      "lastSeenDate": "آخر ظهور {{date}}"
+    },
+    "input": {
+      "cancelEdit": "إلغاء التعديل",
+      "sendImage": "إرسال صورة",
+      "placeholderRemoved": "تم إزالتك من هذا الجروب، مينفعش تبعت رسايل",
+      "placeholderEdit": "عدّل الرسالة...",
+      "placeholderGroup": "اكتب في الجروب...",
+      "placeholderMessage": "اكتب رسالة..."
+    }
+  },
+  "groups": {
+    "removedNotice": "انت اتحذفت من الجروب ده ومش هتقدر تبعت رسائل تاني.",
+    "sidebar": {
+      "title": "الجروبات",
+      "subtitle": "إدارة الغرف والأعضاء",
+      "newButton": "+ جديد",
+      "removedBadge": "تم الحذف"
+    },
+    "membersPanel": {
+      "groupMembers": "أعضاء الجروب",
+      "adminSuffix": "(أدمن)",
+      "addMembers": "إضافة أعضاء"
+    },
+    "chatHeader": {
+      "selectGroup": "اختار جروب",
+      "removedFromGroup": "اتحذفت من الجروب ده",
+      "subtitle": "شات الجروب وإدارة الأعضاء",
+      "chooseFromList": "اختار جروب من القايمة"
+    }
+  },
+  "modal": {
+    "createGroupTitle": "إنشاء جروب",
+    "createGroupSubtitle": "اختار اسم وأعضاء",
+    "groupNameLabel": "اسم الجروب",
+    "groupNamePlaceholder": "مثال: فريق المشروع",
+    "membersLabel": "الأعضاء",
+    "initialMembersLabel": "الأعضاء الأساسيين"
+  }
+}

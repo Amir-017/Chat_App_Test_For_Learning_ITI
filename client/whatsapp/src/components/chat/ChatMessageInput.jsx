@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 export const ChatMessageInput = ({
     inputRef,
     imageInputRef,
@@ -11,6 +13,7 @@ export const ChatMessageInput = ({
     selectedGroup,
     isRemovedFromSelectedGroup,
 }) => {
+    const { t } = useTranslation();
     const isChatDisabled = !(selectedUser || selectedGroup) || !!(selectedGroup && isRemovedFromSelectedGroup);
 
     const handleImageChange = (e) => {
@@ -27,7 +30,7 @@ export const ChatMessageInput = ({
                     onClick={onCancelEdit}
                     className="text-xs font-semibold text-rose-400 hover:text-rose-300"
                 >
-                    Cancel edit
+                    {t("chat.input.cancelEdit")}
                 </button>
             )}
             <input
@@ -42,7 +45,7 @@ export const ChatMessageInput = ({
                 disabled={isChatDisabled}
                 onClick={() => imageInputRef.current?.click()}
                 className="shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                title="Send image"
+                title={t("chat.input.sendImage")}
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 6h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2z" />
@@ -56,12 +59,12 @@ export const ChatMessageInput = ({
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={
                     selectedGroup && isRemovedFromSelectedGroup
-                        ? "تم إزالتك من هذا الجروب، مينفعش تبعت رسايل"
+                        ? t("chat.input.placeholderRemoved")
                         : editingMessage
-                            ? "عدّل الرسالة..."
+                            ? t("chat.input.placeholderEdit")
                             : selectedGroup
-                                ? "اكتب في الجروب..."
-                                : "اكتب رسالة..."
+                                ? t("chat.input.placeholderGroup")
+                                : t("chat.input.placeholderMessage")
                 } className="flex-1 bg-white/5 text-slate-100 placeholder:text-slate-500 rounded-full px-5 py-3 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-400/70"
             />
             <button

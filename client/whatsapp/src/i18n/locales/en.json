@@ -1,0 +1,82 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "remove": "Remove",
+    "admin": "Admin",
+    "unknown": "Unknown",
+    "edited": "edited",
+    "messageDeleted": "This message was deleted",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "selected": "{{count}} selected",
+    "noUsersAvailable": "No users available to add",
+    "addSelectedUsers": "Add selected users"
+  },
+  "header": {
+    "appTitle": "Chat App",
+    "navChat": "Chat",
+    "navGroups": "Groups",
+    "switchLanguage": "العربية"
+  },
+  "chat": {
+    "chooseChat": "Choose someone to start chatting",
+    "sidebar": {
+      "title": "Chats",
+      "newGroup": "+ Group",
+      "groupsLabel": "Groups",
+      "noGroups": "No groups yet",
+      "directChats": "Direct Chats"
+    },
+    "header": {
+      "groupChat": "Group chat",
+      "online": "Online",
+      "lastSeenJustNow": "last seen just now",
+      "lastSeenMinAgo_one": "last seen {{count}} min ago",
+      "lastSeenMinAgo_other": "last seen {{count}} min ago",
+      "lastSeenHrAgo_one": "last seen {{count}} hr ago",
+      "lastSeenHrAgo_other": "last seen {{count}} hr ago",
+      "lastSeenYesterday": "last seen yesterday",
+      "lastSeenDate": "last seen {{date}}"
+    },
+    "input": {
+      "cancelEdit": "Cancel edit",
+      "sendImage": "Send image",
+      "placeholderRemoved": "You were removed from this group, you can't send messages",
+      "placeholderEdit": "Edit message...",
+      "placeholderGroup": "Write in this group...",
+      "placeholderMessage": "Write a message..."
+    }
+  },
+  "groups": {
+    "removedNotice": "You were removed from this group and can no longer send messages.",
+    "sidebar": {
+      "title": "Groups",
+      "subtitle": "Manage rooms and members",
+      "newButton": "+ New",
+      "removedBadge": "removed"
+    },
+    "membersPanel": {
+      "groupMembers": "Group members",
+      "adminSuffix": "(Admin)",
+      "addMembers": "Add members"
+    },
+    "chatHeader": {
+      "selectGroup": "Select a group",
+      "removedFromGroup": "You were removed from this group",
+      "subtitle": "Group chat and member management",
+      "chooseFromList": "Choose a group from the list"
+    }
+  },
+  "modal": {
+    "createGroupTitle": "Create Group",
+    "createGroupSubtitle": "Choose a name and members",
+    "groupNameLabel": "Group name",
+    "groupNamePlaceholder": "e.g. Project Team",
+    "membersLabel": "Members",
+    "initialMembersLabel": "Initial members"
+  }
+}
