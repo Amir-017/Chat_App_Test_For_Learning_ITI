@@ -7,6 +7,7 @@ export const GroupMembersPanel = ({
   toggleAddMember,
   onAddMembers,
 }) => {
+  console.log("selectedGroup:", selectedGroup);
   return (
     <div className="bg-slate-950/70 rounded-3xl border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.35)] overflow-y-auto p-5 space-y-5 backdrop-blur-xl">
       <div>
@@ -26,7 +27,7 @@ export const GroupMembersPanel = ({
                   {member.name?.[0]?.toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <div className="font-medium text-slate-100 truncate">{member.name}</div>
+                  <div className="font-medium text-slate-100 truncate">{selectedGroup?.admin._id === member._id ? member.name +  " (Admin)" : member.name}</div>
                   <div className="text-xs text-slate-400 truncate">{member.email}</div>
                 </div>
               </div>

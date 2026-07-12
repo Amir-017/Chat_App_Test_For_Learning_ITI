@@ -1,18 +1,9 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../Api/axios";
-// import { Navigate, useNavigate } from "react-router-dom";
-export const Header = () => {
-  const [userInfo, setUserInfo] = useState({});
-  const navigate = useNavigate();
-  const getUserInfo = async () => {
-    const { data } = await api.get('api/users/userInfo');
-    setUserInfo(data.user);
-  }
+import { useUser, UserButton } from "@clerk/react";
 
-  useEffect(() => {
-    getUserInfo();
-  }, []);
+export const Header = () => {
+  const navigate = useNavigate();
+  const { isLoaded, isSignedIn, user } = useUser();
 
   return (
     <div className="relative isolate z-50 w-full border-b border-white/10 bg-slate-950/85 backdrop-blur-2xl text-white py-3 px-6 flex items-center justify-between shadow-[0_8px_30px_rgba(0,0,0,0.35)] overflow-visible">
@@ -40,27 +31,14 @@ export const Header = () => {
         </div>
       </div>
 
-    <div className="flex items-center gap-2 group relative cursor-pointer">
-  <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center font-bold text-sm backdrop-blur-sm border border-white/10">
-    {userInfo?.name?.[0]?.toUpperCase() || '?'}
-  </div>
-  <span className="font-medium hidden sm:block">
-    {userInfo?.name || 'جاري التحميل...'}
-  </span>
-
-  <div className="absolute top-full right-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100]">
-    <button
-      onClick={() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/';
-      }}
-      className="bg-white text-slate-950 px-4 py-2 rounded-full font-semibold text-sm hover:bg-slate-100 active:scale-95 transition shadow-lg whitespace-nowrap"
-    >
-      Logout
-    </button>
-  </div>
-</div>
+      {isLoaded && isSignedIn && (
+        <div className="flex items-center gap-3">
+          <span className="font-medium hidden sm:block">
+            {user?.fullName || user?.username || user?.primaryEmailAddress?.emailAddress}
+          </span>
+          <UserButton afterSignOutUrl="/sign-in" />
+        </div>
+      )}
     </div>
   );
 };

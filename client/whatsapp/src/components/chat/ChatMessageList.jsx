@@ -27,6 +27,7 @@ export const ChatMessageList = ({
                             setAllMessages={setAllMessages}
                             socket={socket}
                             selectedUser={selectedUser}
+                            currentUserId={currentUserId}
                             onEdit={onEdit}
                         />
 

@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { createUser, getAllUsers , login , specificUser} = require("../controller/users.controllers");
+const { getAllUsers, specificUser } = require("../controller/users.controllers");
 const { auth } = require("../Auth/auth");
 
 const router = Router();
@@ -8,82 +8,14 @@ const router = Router();
  * @swagger
  * tags:
  *   name: Users
- *   description: Registration, login and user lookups
+ *   description: User lookups. Sign-up and sign-in are handled by Clerk on the frontend, not this API.
  */
-
-/**
- * @swagger
- * /api/users:
- *   post:
- *     summary: Register a new user
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [name, email, password]
- *             properties:
- *               name: { type: string }
- *               email: { type: string, format: email }
- *               password: { type: string, format: password }
- *     responses:
- *       201:
- *         description: User created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string }
- *                 user: { $ref: '#/components/schemas/User' }
- *       400:
- *         description: Missing fields
- *       409:
- *         description: Email already exists
- */
-router.post("/", createUser);
-
-/**
- * @swagger
- * /api/users/login:
- *   post:
- *     summary: Log in and receive a JWT
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [email, password]
- *             properties:
- *               email: { type: string, format: email }
- *               password: { type: string, format: password }
- *     responses:
- *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string }
- *                 token: { type: string }
- *                 id: { type: string }
- *       401:
- *         description: Invalid credentials
- *       404:
- *         description: User not found
- */
-router.post("/login", login);
 
 /**
  * @swagger
  * /api/users:
  *   get:
- *     summary: List all users
+ *     summary: List all users known to this app (synced from Clerk on their first authenticated request)
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []

@@ -105,17 +105,22 @@ const editeMessage = async (req, res) => {
     const { id } = req.params;
     const { message } = req.body;
 
-    const updatedMessage = await Message.findByIdAndUpdate(
-      id,
-      { message },
-      { new: true }
-    );
+    const existingMessage = await Message.findById(id);
 
-    if (!updatedMessage) {
+    if (!existingMessage) {
       return res.status(404).json({ message: "Message not found" });
     }
 
-    res.status(200).json(updatedMessage);
+    if (String(existingMessage.sender) !== String(req.user.id)) {
+      return res.status(403).json({ message: "You can only edit your own messages" });
+    }
+
+    existingMessage.message = message;
+    existingMessage.isEdited = true;
+    existingMessage.editedAt = new Date();
+    await existingMessage.save();
+
+    res.status(200).json(existingMessage);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -129,23 +134,28 @@ const editeMessage = async (req, res) => {
 const editMessage = (io, socket) => {
   socket.on("edit-message", async ({ messageId, newMessage }) => {
     try {
-      const updatedMessage = await Message.findByIdAndUpdate(
-        messageId,
-        {
-          message: newMessage,
-          isEdited: true,
-          editedAt: new Date(),
-        },
-        { new: true }
-      );
+      const existingMessage = await Message.findById(messageId);
 
-      if (!updatedMessage) {
+      if (!existingMessage) {
         socket.emit("message-edit-error", {
           messageId,
           error: "Message not found",
         });
         return;
       }
+
+      if (String(existingMessage.sender) !== String(socket.data.userId)) {
+        socket.emit("message-edit-error", {
+          messageId,
+          error: "You can only edit your own messages",
+        });
+        return;
+      }
+
+      existingMessage.message = newMessage;
+      existingMessage.isEdited = true;
+      existingMessage.editedAt = new Date();
+      const updatedMessage = await existingMessage.save();
 
       const payload = { messageId, newMessage };
 
@@ -175,19 +185,26 @@ const editMessage = (io, socket) => {
 const deleteMessage = (io, socket) => {
   socket.on("delete-message", async ({ messageId }) => {
     try {
-      const deletedMessage = await Message.findByIdAndUpdate(
-        messageId,
-        { isDeleted: true },
-        { new: true }
-      );
+      const existingMessage = await Message.findById(messageId);
 
-      if (!deletedMessage) {
+      if (!existingMessage) {
         socket.emit("message-delete-error", {
           messageId,
           error: "Message not found",
         });
         return;
       }
+
+      if (String(existingMessage.sender) !== String(socket.data.userId)) {
+        socket.emit("message-delete-error", {
+          messageId,
+          error: "You can only delete your own messages",
+        });
+        return;
+      }
+
+      existingMessage.isDeleted = true;
+      const deletedMessage = await existingMessage.save();
 
       const payload = { messageId };
 

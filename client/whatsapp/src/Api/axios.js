@@ -6,10 +6,10 @@ const api = axios.create({
 });
 
 // interceptor - بيتنفذ تلقائي قبل أي request
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+api.interceptors.request.use(async (config) => {
+  const token = await window.Clerk?.session?.getToken();
   if (token) {
-    config.headers.Authorization = token;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });

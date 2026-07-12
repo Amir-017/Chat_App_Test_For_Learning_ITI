@@ -21,6 +21,7 @@ export const GroupMessageList = ({
               setAllMessages={setAllMessages}
               socket={socket}
               selectedUser={null}
+              currentUserId={currentUserId}
               onEdit={onEdit}
             />
             <div

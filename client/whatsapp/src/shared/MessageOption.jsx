@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 
-const MessageOptions = ({ message, openUpward, setCheckDelete, setAllMessages, socket, selectedUser, onEdit }) => {
+const MessageOptions = ({ message, openUpward, setCheckDelete, setAllMessages, socket, selectedUser, onEdit, currentUserId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
-  const currentUser = String(JSON.parse(localStorage.getItem('user')));
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -29,7 +28,7 @@ const handleDeleteMessage = (msg) => {
 
   return (
     <div className="">
-          {currentUser === String(message?.sender) && (message?.isDeleted === false) &&   <div ref={menuRef} className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          {String(currentUserId) === String(message?.sender) && (message?.isDeleted === false) &&   <div ref={menuRef} className="relative shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className="text-start text-slate-400 hover:text-slate-100 p-1 rounded-full hover:bg-white/10 transition"

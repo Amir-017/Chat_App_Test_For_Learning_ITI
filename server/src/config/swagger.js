@@ -20,7 +20,7 @@ const options = {
           type: "http",
           scheme: "bearer",
           bearerFormat: "JWT",
-          description: "Send the token returned by /api/users/login. Accepted as-is or with a 'Bearer ' prefix.",
+          description: "Send the Clerk session token (from the frontend's getToken()). Accepted as-is or with a 'Bearer ' prefix.",
         },
       },
       schemas: {
@@ -28,6 +28,7 @@ const options = {
           type: "object",
           properties: {
             _id: { type: "string" },
+            clerkId: { type: "string" },
             name: { type: "string" },
             email: { type: "string", format: "email" },
             isOnline: { type: "boolean" },

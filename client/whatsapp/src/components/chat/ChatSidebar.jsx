@@ -1,3 +1,5 @@
+import { useUser, UserButton } from "@clerk/react";
+
 export const ChatSidebar = ({
     groups,
     selectedGroup,
@@ -7,6 +9,9 @@ export const ChatSidebar = ({
     onSelectUser,
     onOpenCreateGroup,
 }) => {
+    const { user } = useUser();
+    console.log(user);
+    console.log(users);
     return (
         <div className="w-1/5 bg-slate-950/85 border-l border-white/10 flex flex-col backdrop-blur-xl">
             <div className="bg-slate-950/90 px-4 py-4 flex items-center justify-between gap-3 border-b border-white/10">
@@ -55,17 +60,30 @@ export const ChatSidebar = ({
                     <h2 className="text-white font-bold text-lg">Direct Chats</h2>
                 </div>
 
-                {users.map((user) => (
+                {users.map((userFromAllUsers) => (
                     <div
-                        key={user._id}
-                        onClick={() => onSelectUser(user)}
-                        className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-white/10 hover:bg-white/5 transition ${selectedUser?._id === user._id ? "bg-emerald-500/15" : ""
+                        key={userFromAllUsers._id}
+                        onClick={() => onSelectUser(userFromAllUsers)}
+                        className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-white/10 hover:bg-white/5 transition ${selectedUser?._id === userFromAllUsers._id ? "bg-emerald-500/15" : ""
                             }`}
                     >
-                        <div className="w-11 h-11 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center text-slate-950 font-bold shrink-0">
-                            {user.name?.[0]?.toUpperCase()}
+                        <div className="relative shrink-0">
+                            {userFromAllUsers?.imageUrl ? (
+                                <img
+                                    src={userFromAllUsers.imageUrl}
+                                    alt={userFromAllUsers.name}
+                                    className="w-11 h-11 rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-11 h-11 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center text-slate-950 font-bold">
+                                    {userFromAllUsers.name?.[0]?.toUpperCase()}
+                                </div>
+                            )}
+                            {userFromAllUsers.isOnline && (
+                                <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-950" />
+                            )}
                         </div>
-                        <span className="text-slate-100 font-medium truncate">{user.name}</span>
+                        <span className="text-slate-100 font-medium truncate">{userFromAllUsers.name}</span>
                     </div>
                 ))}
             </div>

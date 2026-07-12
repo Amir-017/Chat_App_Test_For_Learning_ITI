@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { io } from "socket.io-client";
+import { useEffect, useRef, useState } from "react";
 import api from "../Api/axios";
 import { ChatHeader } from "../components/chat/ChatHeader";
 import { ChatMessageList } from "../components/chat/ChatMessageList";
 import { ChatMessageInput } from "../components/chat/ChatMessageInput";
 import { ChatSidebar } from "../components/chat/ChatSidebar";
 import { CreateGroupModal } from "../components/chat/CreateGroupModal";
+import { useAuthedSocket } from "../hooks/useAuthedSocket";
 
 export const Chat = () => {
     const [message, setMessage] = useState("");
@@ -20,8 +20,7 @@ export const Chat = () => {
     const [editingMessage, setEditingMessage] = useState(null);
     const inputRef = useRef(null);
     const imageInputRef = useRef(null);
-    const socket = useMemo(() => io("http://localhost:3000"), []);
-    const currentUserId = String(JSON.parse(localStorage.getItem("user")));
+    const { socket, currentUserId, isReady } = useAuthedSocket();
     const isRemovedFromSelectedGroup = selectedGroup && selectedGroup.removedMembers.some((member) => String(member) === currentUserId);
     const getUserName = (userId) => {
         return allusers.find((user) => String(user._id) === String(userId))?.name || "Unknown";
@@ -36,10 +35,7 @@ export const Chat = () => {
 
     // Sets up all socket listeners (new messages, edits, deletes, group changes) and cleans them up on unmount
     useEffect(() => {
-        // Runs once the socket actually connects, joins our personal room so private events can reach us
-        socket.on("connect", () => {
-            socket.emit("join-room", currentUserId);
-        });
+        if (!socket) return;
 
         // A new direct message was sent to us - add it to our messages list
         socket.on("receive-message", (messageData) => {
@@ -113,6 +109,20 @@ export const Chat = () => {
             console.error(error);
         });
 
+        // Someone came online or went offline - sync their status in the users list and the open chat header.
+        // lastSeen is only sent when going offline, so merge it in only when present (going online must not
+        // wipe out the last known lastSeen with undefined).
+        socket.on("user-status-changed", ({ userId, isOnline, lastSeen }) => {
+            const patch = lastSeen !== undefined ? { isOnline, lastSeen } : { isOnline };
+
+            setAllUsers((prev) =>
+                prev.map((user) => (String(user._id) === String(userId) ? { ...user, ...patch } : user))
+            );
+            setSelectedUser((prev) =>
+                prev && String(prev._id) === String(userId) ? { ...prev, ...patch } : prev
+            );
+        });
+
         // Cleanup: remove all these listeners when the component unmounts or this effect re-runs
         return () => {
             socket.off("receive-message");
@@ -123,22 +133,24 @@ export const Chat = () => {
             socket.off("group-updated");
             socket.off("message-delete-error");
             socket.off("message-edit-error");
+            socket.off("user-status-changed");
         };
     }, [socket, currentUserId]);
 
-    // Runs once on page load to fetch users, groups, and messages
+    // Runs once the socket/user are ready to fetch users, groups, and messages
     useEffect(() => {
+        if (!isReady) return;
         getAllUsers();
         getAllGroups();
         getAllMessages();
-    }, []);
+    }, [isReady]);
 
     // Joins the socket room for every group whenever the group list changes
     useEffect(() => {
-        if (groups.length > 0) {
+        if (socket && groups.length > 0) {
             joinAllGroups(groups);
         }
-    }, [groups]);
+    }, [socket, groups]);
 
     // Clears the input and any in-progress edit once no chat is selected
     useEffect(() => {
@@ -199,13 +211,11 @@ export const Chat = () => {
             socket.emit("send-group-message", {
                 message: message.trim(),
                 groupId: selectedGroup._id,
-                sender: currentUserId,
             });
         } else {
             socket.emit("send-message", {
                 message: message.trim(),
                 receiver: selectedUser._id,
-                sender: currentUserId,
             });
         }
 
@@ -296,12 +306,30 @@ export const Chat = () => {
 
     const chatAvatar = selectedGroup
         ? selectedGroup.name?.[0]?.toUpperCase() || "#"
-        : selectedUser?.name?.[0]?.toUpperCase() || "?";
+        :selectedUser?.imageUrl ? (
+            <img
+                src={selectedUser.imageUrl}
+                alt={selectedUser.name}
+                className="w-10 h-10 rounded-full object-cover"
+            />
+        ) : (
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center text-slate-950 font-bold">
+                {selectedUser?.name?.[0]?.toUpperCase() || "?"}
+            </div>
+        );
 
+    if (!isReady) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
+                جاري التحميل...
+            </div>
+        );
+    }
+ console.log(selectedUser)
     return (
         <div className="flex h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
             <div className="w-4/5 flex flex-col bg-slate-950/65 border-r border-white/10 backdrop-blur-xl">
-                <ChatHeader chatAvatar={chatAvatar} chatTitle={chatTitle} selectedGroup={selectedGroup} />
+                <ChatHeader chatAvatar={chatAvatar} chatTitle={chatTitle} selectedGroup={selectedGroup} selectedUser={selectedUser} />
 
                 <ChatMessageList
                     messages={activeMessages}

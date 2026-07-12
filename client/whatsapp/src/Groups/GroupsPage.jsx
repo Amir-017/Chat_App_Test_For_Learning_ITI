@@ -1,19 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { io } from "socket.io-client";
+import { useEffect, useRef, useState } from "react";
 import api from "../Api/axios";
-import MessageOptions from "../shared/MessageOption";
 import { CreateGroupModal } from "../components/group/CreateGroupModel";
 import { GroupsSidebar } from "../components/group/GroupsSidebar";
 import { GroupMembersPanel } from "../components/group/GroupMembersPanel";
 import { GroupChatHeader } from "../components/group/GroupChatHeader";
 import { GroupMessageList } from "../components/group/GroupMessageList";
 import { GroupMessageInput } from "../components/group/GroupMessageInput";
+import { useAuthedSocket } from "../hooks/useAuthedSocket";
 
 export const GroupsPage = () => {
-    const socket = useMemo(() => io("http://localhost:3000"), []);
+    const { socket, currentUserId, isReady } = useAuthedSocket();
     const inputRef = useRef(null);
     const imageInputRef = useRef(null);
-    const currentUserId = String(JSON.parse(localStorage.getItem("user")));
     const [allUsers, setAllUsers] = useState([]);
     const [groups, setGroups] = useState([]);
     const [allMessages, setAllMessages] = useState([]);
@@ -60,10 +58,7 @@ export const GroupsPage = () => {
 
     // Sets up all socket listeners (new messages, edits, deletes, group changes) and cleans them up on unmount
     useEffect(() => {
-        // Runs once the socket actually connects, joins our personal room so private events can reach us
-        socket.on("connect", () => {
-            socket.emit("join-room", currentUserId);
-        });
+        if (!socket) return;
 
         // A new message was sent in a group we're part of - add it to our messages list
         socket.on("group-message", (msg) => {
@@ -129,14 +124,15 @@ export const GroupsPage = () => {
         };
     }, [socket, currentUserId]);
 
-    // Runs once on page load to fetch the initial data
+    // Runs once the socket/user are ready to fetch the initial data
     useEffect(() => {
+        if (!isReady) return;
         fetchInitialData();
-    }, []);
+    }, [isReady]);
 
     // Joins the socket room for the selected group whenever it changes
     useEffect(() => {
-        if (selectedGroup?._id) {
+        if (socket && selectedGroup?._id) {
             socket.emit("join-group", selectedGroup._id);
         }
     }, [selectedGroup, socket]);
@@ -159,7 +155,6 @@ export const GroupsPage = () => {
         socket.emit("send-group-message", {
             message: message.trim(),
             groupId: selectedGroup._id,
-            sender: currentUserId,
         });
         setMessage("");
     };
@@ -241,6 +236,14 @@ export const GroupsPage = () => {
         setEditingMessage(null);
         setMessage("");
     };
+
+    if (!isReady) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
+                جاري التحميل...
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
