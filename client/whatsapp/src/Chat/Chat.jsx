@@ -7,6 +7,7 @@ import { ChatMessageInput } from "../components/chat/ChatMessageInput";
 import { ChatSidebar } from "../components/chat/ChatSidebar";
 import { CreateGroupModal } from "../components/chat/CreateGroupModal";
 import { useAuthedSocket } from "../hooks/useAuthedSocket";
+import { confirmDialog } from "../shared/confirmDialog";
 
 export const Chat = () => {
     const { t } = useTranslation();
@@ -112,6 +113,29 @@ export const Chat = () => {
             console.error(error);
         });
 
+        // We cleared a chat (direct or group) - drop every message of that conversation from our local list.
+        // This only ever runs for the user who requested the clear, so it's safe to just filter locally.
+        socket.on("chat-cleared", ({ conversationType, targetId }) => {
+            setAllMessages((prev) =>
+                prev.filter((msg) => {
+                    if (conversationType === "group") {
+                        return !(msg.conversationType === "group" && String(msg.group) === String(targetId));
+                    }
+
+                    const isDirectMessage = !msg.conversationType || msg.conversationType === "direct";
+                    const isBetweenUsers =
+                        (String(msg.sender) === currentUserId && String(msg.receiver) === String(targetId)) ||
+                        (String(msg.sender) === String(targetId) && String(msg.receiver) === currentUserId);
+
+                    return !(isDirectMessage && isBetweenUsers);
+                })
+            );
+        });
+
+        socket.on("clear-chat-error", ({ error }) => {
+            console.error(error);
+        });
+
         // Someone came online or went offline - sync their status in the users list and the open chat header.
         // lastSeen is only sent when going offline, so merge it in only when present (going online must not
         // wipe out the last known lastSeen with undefined).
@@ -137,6 +161,8 @@ export const Chat = () => {
             socket.off("message-delete-error");
             socket.off("message-edit-error");
             socket.off("user-status-changed");
+            socket.off("chat-cleared");
+            socket.off("clear-chat-error");
         };
     }, [socket, currentUserId]);
 
@@ -284,6 +310,25 @@ export const Chat = () => {
         }
     };
 
+    // Clears every message of the current conversation, for this user only, after confirmation
+    const handleClearChat = async () => {
+        if (!selectedUser && !selectedGroup) return;
+
+        const confirmed = await confirmDialog({
+            title: t("chat.header.clearChat"),
+            text: t("chat.header.confirmClearChat"),
+            confirmText: t("chat.header.clearChat"),
+            cancelText: t("common.cancel"),
+        });
+        if (!confirmed) return;
+
+        if (selectedGroup) {
+            socket.emit("clear-chat", { conversationType: "group", targetId: selectedGroup._id });
+        } else {
+            socket.emit("clear-chat", { conversationType: "direct", targetId: selectedUser._id });
+        }
+    };
+
     // Cancels edit mode and clears the input box
     const cancelEdit = () => {
         setEditingMessage(null);
@@ -337,7 +382,13 @@ export const Chat = () => {
     return (
         <div className="flex h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
             <div className="w-4/5 flex flex-col bg-slate-950/65 border-e border-white/10 backdrop-blur-xl">
-                <ChatHeader chatAvatar={chatAvatar} chatTitle={chatTitle} selectedGroup={selectedGroup} selectedUser={selectedUser} />
+                <ChatHeader
+                    chatAvatar={chatAvatar}
+                    chatTitle={chatTitle}
+                    selectedGroup={selectedGroup}
+                    selectedUser={selectedUser}
+                    onClearChat={handleClearChat}
+                />
 
                 <ChatMessageList
                     messages={activeMessages}

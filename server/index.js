@@ -15,7 +15,7 @@ const User = require("./src/models/users.models");
 const userRoutes = require("./src/routes/users.routes");
 const messageRouter = require("./src/routes/messages.routes");
 const groupRouter = require("./src/routes/groups.routes");
-const { deleteMessage, editMessage } = require("./src/controller/messages.controller");
+const { deleteMessage, editMessage, clearChat } = require("./src/controller/messages.controller");
 const { clerkMiddleware, verifySocketToken, getOrCreateLocalUser } = require("./src/Auth/auth");
 const app = express();
 
@@ -168,6 +168,9 @@ io.on("connection", (socket) => {
 
     ///////// delete message ///////////
     deleteMessage(io, socket);
+
+    ///////// clear chat ///////////
+    clearChat(io, socket);
     socket.on("disconnect", () => {
         console.log("User Disconnected:", socket.id, currentUserId);
 

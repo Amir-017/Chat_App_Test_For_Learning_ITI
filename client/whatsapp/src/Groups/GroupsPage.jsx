@@ -8,6 +8,7 @@ import { GroupChatHeader } from "../components/group/GroupChatHeader";
 import { GroupMessageList } from "../components/group/GroupMessageList";
 import { GroupMessageInput } from "../components/group/GroupMessageInput";
 import { useAuthedSocket } from "../hooks/useAuthedSocket";
+import { confirmDialog } from "../shared/confirmDialog";
 
 export const GroupsPage = () => {
     const { t } = useTranslation();
@@ -117,6 +118,19 @@ export const GroupsPage = () => {
             });
         });
 
+        // We cleared this group's chat - drop its messages from our local list (only fires for the requester)
+        socket.on("chat-cleared", ({ conversationType, targetId }) => {
+            if (conversationType !== "group") return;
+
+            setAllMessages((prev) =>
+                prev.filter((msg) => !(msg.conversationType === "group" && String(msg.group) === String(targetId)))
+            );
+        });
+
+        socket.on("clear-chat-error", ({ error }) => {
+            console.error(error);
+        });
+
         // Cleanup: remove all these listeners when the component unmounts or this effect re-runs
         return () => {
             socket.off("group-message");
@@ -124,6 +138,8 @@ export const GroupsPage = () => {
             socket.off("message-deleted");
             socket.off("group-created");
             socket.off("group-updated");
+            socket.off("chat-cleared");
+            socket.off("clear-chat-error");
         };
     }, [socket, currentUserId]);
 
@@ -239,6 +255,21 @@ export const GroupsPage = () => {
         );
     };
 
+    // Clears every message of the selected group, for this user only, after confirmation
+    const handleClearChat = async () => {
+        if (!selectedGroup) return;
+
+        const confirmed = await confirmDialog({
+            title: t("chat.header.clearChat"),
+            text: t("chat.header.confirmClearChat"),
+            confirmText: t("chat.header.clearChat"),
+            cancelText: t("common.cancel"),
+        });
+        if (!confirmed) return;
+
+        socket.emit("clear-chat", { conversationType: "group", targetId: selectedGroup._id });
+    };
+
     // Cancels edit mode and clears the input box
     const cancelEdit = () => {
         setEditingMessage(null);
@@ -265,7 +296,11 @@ export const GroupsPage = () => {
                 currentUserId={currentUserId}
             />
             <div className="flex-1 flex flex-col">
-                <GroupChatHeader selectedGroup={selectedGroup} isRemovedFromSelectedGroup={isRemovedFromSelectedGroup} />
+                <GroupChatHeader
+                    selectedGroup={selectedGroup}
+                    isRemovedFromSelectedGroup={isRemovedFromSelectedGroup}
+                    onClearChat={handleClearChat}
+                />
 
                 <div className="flex-1 grid grid-cols-1 xl:grid-cols-[1.5fr_0.9fr] gap-4 p-4 overflow-hidden">
                     <div className="bg-slate-950/65 rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.35)] border border-white/10 flex flex-col overflow-hidden backdrop-blur-xl">

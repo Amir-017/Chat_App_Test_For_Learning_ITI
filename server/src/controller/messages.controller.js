@@ -13,6 +13,7 @@ const allMessages = async (req, res) => {
     const groupIds = groups.map((group) => group._id);
 
     const messages = await Message.find({
+      deletedFor: { $ne: userId },
       $or: [
         {
           conversationType: { $ne: "group" },
@@ -227,10 +228,53 @@ const deleteMessage = (io, socket) => {
 };
 
 
+//////////////////////////////////
+
+// Clear Chat (hides every message in a conversation for the requesting user only)
+
+//////////////////////////////////
+const clearChat = (io, socket) => {
+  socket.on("clear-chat", async ({ conversationType, targetId }) => {
+    const currentUserId = socket.data.userId;
+
+    try {
+      let filter;
+
+      if (conversationType === "group") {
+        const group = await Group.findById(targetId);
+        const isMember = group?.members.some((member) => String(member) === currentUserId);
+
+        if (!isMember) {
+          socket.emit("clear-chat-error", { error: "You are not a member of this group" });
+          return;
+        }
+
+        filter = { conversationType: "group", group: targetId };
+      } else {
+        filter = {
+          conversationType: { $ne: "group" },
+          $or: [
+            { sender: currentUserId, receiver: targetId },
+            { sender: targetId, receiver: currentUserId },
+          ],
+        };
+      }
+
+      await Message.updateMany(filter, { $addToSet: { deletedFor: currentUserId } });
+
+      socket.emit("chat-cleared", { conversationType, targetId });
+    } catch (error) {
+      console.error("Error clearing chat:", error.message);
+      socket.emit("clear-chat-error", { error: "Failed to clear chat" });
+    }
+  });
+};
+
 module.exports = {
   allMessages,
   uploadMessageImage,
   editeMessage,
   editMessage,
   deleteMessage,
+  clearChat,
 };

@@ -40,7 +40,9 @@
       "lastSeenHrAgo_one": "last seen {{count}} hr ago",
       "lastSeenHrAgo_other": "last seen {{count}} hr ago",
       "lastSeenYesterday": "last seen yesterday",
-      "lastSeenDate": "last seen {{date}}"
+      "lastSeenDate": "last seen {{date}}",
+      "clearChat": "Clear chat",
+      "confirmClearChat": "Clear this chat? Messages will only disappear for you."
     },
     "input": {
       "cancelEdit": "Cancel edit",

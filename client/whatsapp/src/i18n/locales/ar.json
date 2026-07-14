@@ -43,7 +43,9 @@
       "lastSeenHrAgo_one": "آخر ظهور من ساعة",
       "lastSeenHrAgo_other": "آخر ظهور من {{count}} ساعة",
       "lastSeenYesterday": "آخر ظهور إمبارح",
-      "lastSeenDate": "آخر ظهور {{date}}"
+      "lastSeenDate": "آخر ظهور {{date}}",
+      "clearChat": "مسح الشات",
+      "confirmClearChat": "متأكد إنك عايز تمسح الشات ده؟ الرسايل هتختفي عندك بس، الطرف التاني هيفضل شايفها."
     },
     "input": {
       "cancelEdit": "إلغاء التعديل",
