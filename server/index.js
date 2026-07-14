@@ -187,7 +187,7 @@ io.on("connection", (socket) => {
 });
 
 // connect to mongodb
-mongoose.connect("mongodb://localhost:27017/chat-app").then(() => {
+mongoose.connect(process.env.MONGODB_URI).then(() => {
     console.log("MongoDB Connected");
 })
 

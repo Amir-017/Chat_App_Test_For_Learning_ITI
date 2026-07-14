@@ -327,7 +327,7 @@ export const Chat = () => {
             </div>
         );
     }
- console.log(selectedUser)
+
     return (
         <div className="flex h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
             <div className="w-4/5 flex flex-col bg-slate-950/65 border-e border-white/10 backdrop-blur-xl">
