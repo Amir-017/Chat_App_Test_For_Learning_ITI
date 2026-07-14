@@ -23,6 +23,7 @@ export const GroupsPage = () => {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [groupName, setGroupName] = useState("");
     const [createMembers, setCreateMembers] = useState([]);
+    const [isCreatingGroup, setIsCreatingGroup] = useState(false);
     const [addMembers, setAddMembers] = useState([]);
     const isAdmin = selectedGroup && String(selectedGroup.admin?._id || selectedGroup.admin) === currentUserId;
     const isRemovedFromSelectedGroup = selectedGroup && (selectedGroup.removedMembers || []).some((member) => String(member._id || member) === currentUserId);
@@ -164,19 +165,24 @@ export const GroupsPage = () => {
     // Creates a new group with the chosen name and members, then opens it
     const handleCreateGroup = async (e) => {
         e.preventDefault();
-        if (!groupName.trim()) return;
+        if (!groupName.trim() || isCreatingGroup) return;
 
-        const { data } = await api.post("api/groups", {
-            name: groupName.trim(),
-            members: createMembers,
-        });
+        setIsCreatingGroup(true);
+        try {
+            const { data } = await api.post("api/groups", {
+                name: groupName.trim(),
+                members: createMembers,
+            });
 
-        setIsCreateOpen(false);
-        setGroupName("");
-        setCreateMembers([]);
-        setGroups((prev) => [data.group, ...prev.filter((group) => group._id !== data.group._id)]);
-        setSelectedGroup(data.group);
-        socket.emit("join-group", data.group._id);
+            setIsCreateOpen(false);
+            setGroupName("");
+            setCreateMembers([]);
+            setGroups((prev) => [data.group, ...prev.filter((group) => group._id !== data.group._id)]);
+            setSelectedGroup(data.group);
+            socket.emit("join-group", data.group._id);
+        } finally {
+            setIsCreatingGroup(false);
+        }
     };
 
     // Adds the selected users to the currently open group
@@ -314,6 +320,7 @@ export const GroupsPage = () => {
                 createMembers={createMembers}
                 toggleCreateMember={toggleCreateMember}
                 onSubmit={handleCreateGroup}
+                isSubmitting={isCreatingGroup}
             />
         </div>
     );

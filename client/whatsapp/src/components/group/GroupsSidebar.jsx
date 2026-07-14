@@ -2,12 +2,14 @@ import { useTranslation } from "react-i18next";
 
 export const GroupsSidebar = ({ groups, selectedGroup, onSelectGroup, onOpenCreate, currentUserId }) => {
   const { t } = useTranslation();
+  console.log(groups)
   return (
     <div className="w-80 bg-slate-950/85 border-e border-white/10 flex flex-col backdrop-blur-xl">
       <div className="px-4 py-4 bg-slate-950/90 text-white flex items-center justify-between border-b border-white/10">
         <div>
           <h2 className="font-bold text-lg">{t("groups.sidebar.title")}</h2>
           <p className="text-xs text-emerald-50">{t("groups.sidebar.subtitle")}</p>
+      
         </div>
         <button
           onClick={onOpenCreate}

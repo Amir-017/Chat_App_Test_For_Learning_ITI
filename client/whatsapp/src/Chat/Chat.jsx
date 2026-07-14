@@ -19,6 +19,7 @@ export const Chat = () => {
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const [groupName, setGroupName] = useState("");
     const [groupMembers, setGroupMembers] = useState([]);
+    const [isCreatingGroup, setIsCreatingGroup] = useState(false);
     const [editingMessage, setEditingMessage] = useState(null);
     const inputRef = useRef(null);
     const imageInputRef = useRef(null);
@@ -261,21 +262,26 @@ export const Chat = () => {
     const handleCreateGroup = async (e) => {
         e.preventDefault();
 
-        if (!groupName.trim() || groupMembers.length === 0) return;
+        if (!groupName.trim() || groupMembers.length === 0 || isCreatingGroup) return;
 
-        const { data } = await api.post("api/groups", {
-            name: groupName.trim(),
-            members: groupMembers,
-        });
+        setIsCreatingGroup(true);
+        try {
+            const { data } = await api.post("api/groups", {
+                name: groupName.trim(),
+                members: groupMembers,
+            });
 
-        const createdGroup = data.group;
-        setGroups((prev) => [createdGroup, ...prev.filter((group) => group._id !== createdGroup._id)]);
-        socket.emit("join-group", createdGroup._id);
-        setSelectedGroup(createdGroup);
-        setSelectedUser(null);
-        setGroupName("");
-        setGroupMembers([]);
-        setIsGroupModalOpen(false);
+            const createdGroup = data.group;
+            setGroups((prev) => [createdGroup, ...prev.filter((group) => group._id !== createdGroup._id)]);
+            socket.emit("join-group", createdGroup._id);
+            setSelectedGroup(createdGroup);
+            setSelectedUser(null);
+            setGroupName("");
+            setGroupMembers([]);
+            setIsGroupModalOpen(false);
+        } finally {
+            setIsCreatingGroup(false);
+        }
     };
 
     // Cancels edit mode and clears the input box
@@ -377,6 +383,7 @@ export const Chat = () => {
                 groupMembers={groupMembers}
                 onToggleMember={handleGroupMemberToggle}
                 onSubmit={handleCreateGroup}
+                isSubmitting={isCreatingGroup}
             />
         </div>
     );

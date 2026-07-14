@@ -9,6 +9,7 @@ export const CreateGroupModal = ({
   createMembers,
   toggleCreateMember,
   onSubmit,
+  isSubmitting,
 }) => {
   const { t } = useTranslation();
   if (!isOpen) return null;
@@ -67,7 +68,11 @@ export const CreateGroupModal = ({
             <button type="button" onClick={onClose} className="px-4 py-2 rounded-2xl border border-white/10 text-sm font-semibold text-slate-300 hover:bg-white/5">
               {t("common.cancel")}
             </button>
-            <button type="submit" className="px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 text-sm font-semibold hover:from-emerald-400 hover:to-cyan-400">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 text-sm font-semibold hover:from-emerald-400 hover:to-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {t("common.create")}
             </button>
           </div>
