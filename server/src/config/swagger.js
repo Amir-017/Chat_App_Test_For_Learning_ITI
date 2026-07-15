@@ -10,6 +10,10 @@ const options = {
     },
     servers: [
       {
+        url: "http://16.16.255.86",
+        description: "Production server",
+      },
+      {
         url: "http://localhost:3000",
         description: "Local server",
       },
