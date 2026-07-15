@@ -12,7 +12,7 @@ export const ChatSidebar = ({
     const { t } = useTranslation();
     return (
         <div className="w-1/5 bg-slate-950/85 border-s border-white/10 flex flex-col backdrop-blur-xl">
-            <div className="bg-slate-950/90 px-4 py-4 flex items-center justify-between gap-3 border-b border-white/10">
+            <div className="bg-slate-950/90 px-4 py-4 flex items-center justify-between gap-1 border-b border-white/10">
                 <h2 className="text-white font-bold text-lg">{t("chat.sidebar.title")}</h2>
                 <button
                     type="button"
