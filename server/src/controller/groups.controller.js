@@ -195,6 +195,37 @@ const removeGroupMember = async (req, res) => {
   }
 };
 
+const deleteGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user.id;
+
+    const group = await Group.findById(groupId);
+    const adminCheck = assertGroupAdmin(group, userId);
+
+    if (!adminCheck.allowed) {
+      return res.status(adminCheck.status).json({ message: adminCheck.message });
+    }
+
+    const memberIds = group.members.map((member) => String(member));
+
+    await Group.findByIdAndDelete(groupId);
+    await Message.deleteMany({ conversationType: "group", group: groupId });
+
+    const io = req.app.get("io");
+    if (io) {
+      memberIds.forEach((memberId) => {
+        io.to(memberId).emit("group-deleted", { groupId });
+      });
+      io.to(String(groupId)).emit("group-deleted", { groupId });
+    }
+
+    res.status(200).json({ message: "Group deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const getGroupMessages = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -219,5 +250,6 @@ module.exports = {
   getGroupById,
   addGroupMembers,
   removeGroupMember,
+  deleteGroup,
   getGroupMessages,
 };

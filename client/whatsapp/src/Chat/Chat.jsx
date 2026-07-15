@@ -26,6 +26,7 @@ export const Chat = () => {
     const imageInputRef = useRef(null);
     const { socket, currentUserId, isReady } = useAuthedSocket();
     const isRemovedFromSelectedGroup = selectedGroup && selectedGroup.removedMembers.some((member) => String(member) === currentUserId);
+    const isSelectedGroupAdmin = selectedGroup && String(selectedGroup.admin?._id || selectedGroup.admin) === currentUserId;
     const getUserName = (userId) => {
         return allusers.find((user) => String(user._id) === String(userId))?.name || "Unknown";
     };
@@ -136,6 +137,16 @@ export const Chat = () => {
             console.error(error);
         });
 
+        // The group was deleted (by its admin) - drop it, its messages, and deselect it if it was open
+        socket.on("group-deleted", ({ groupId }) => {
+            setGroups((prev) => prev.filter((group) => group._id !== groupId));
+            setAllMessages((prev) =>
+                prev.filter((msg) => !(msg.conversationType === "group" && String(msg.group) === String(groupId)))
+            );
+            setSelectedGroup((prev) => (prev && prev._id === groupId ? null : prev));
+            socket.emit("leave-group", groupId);
+        });
+
         // Someone came online or went offline - sync their status in the users list and the open chat header.
         // lastSeen is only sent when going offline, so merge it in only when present (going online must not
         // wipe out the last known lastSeen with undefined).
@@ -163,6 +174,7 @@ export const Chat = () => {
             socket.off("user-status-changed");
             socket.off("chat-cleared");
             socket.off("clear-chat-error");
+            socket.off("group-deleted");
         };
     }, [socket, currentUserId]);
 
@@ -329,6 +341,22 @@ export const Chat = () => {
         }
     };
 
+    // Deletes the selected group entirely (admin only), for every member, after confirmation.
+    // Local state cleanup happens via the "group-deleted" socket event, which the server sends back to the admin too.
+    const handleDeleteGroup = async () => {
+        if (!selectedGroup || !isSelectedGroupAdmin) return;
+
+        const confirmed = await confirmDialog({
+            title: t("groups.deleteGroupButton"),
+            text: t("groups.confirmDeleteGroup"),
+            confirmText: t("groups.deleteGroupButton"),
+            cancelText: t("common.cancel"),
+        });
+        if (!confirmed) return;
+
+        await api.delete(`api/groups/${selectedGroup._id}`);
+    };
+
     // Cancels edit mode and clears the input box
     const cancelEdit = () => {
         setEditingMessage(null);
@@ -388,6 +416,8 @@ export const Chat = () => {
                     selectedGroup={selectedGroup}
                     selectedUser={selectedUser}
                     onClearChat={handleClearChat}
+                    isGroupAdmin={isSelectedGroupAdmin}
+                    onDeleteGroup={handleDeleteGroup}
                 />
 
                 <ChatMessageList

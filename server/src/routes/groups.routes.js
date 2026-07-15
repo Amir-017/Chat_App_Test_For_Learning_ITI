@@ -6,6 +6,7 @@ const {
   getGroupById,
   addGroupMembers,
   removeGroupMember,
+  deleteGroup,
   getGroupMessages,
 } = require("../controller/groups.controller");
 
@@ -193,6 +194,31 @@ router.post("/:groupId/members", auth, addGroupMembers);
  *         description: Group not found
  */
 router.delete("/:groupId/members/:memberId", auth, removeGroupMember);
+
+/**
+ * @swagger
+ * /api/groups/{groupId}:
+ *   delete:
+ *     summary: Delete a group entirely, along with all of its messages (admin only)
+ *     tags: [Groups]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Group deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only group admin can do this
+ *       404:
+ *         description: Group not found
+ */
+router.delete("/:groupId", auth, deleteGroup);
 
 /**
  * @swagger

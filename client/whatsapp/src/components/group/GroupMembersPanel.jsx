@@ -8,6 +8,7 @@ export const GroupMembersPanel = ({
   addMembers,
   toggleAddMember,
   onAddMembers,
+  onDeleteGroup,
 }) => {
   const { t } = useTranslation();
   return (
@@ -73,6 +74,17 @@ export const GroupMembersPanel = ({
             className="mt-3 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 py-3 text-sm font-semibold"
           >
             {t("common.addSelectedUsers")}
+          </button>
+        </div>
+      )}
+
+      {isAdmin && (
+        <div className="pt-2 border-t border-white/10">
+          <button
+            onClick={onDeleteGroup}
+            className="w-full rounded-2xl border border-red-400/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 hover:text-red-200 py-3 text-sm font-semibold transition"
+          >
+            {t("groups.deleteGroupButton")}
           </button>
         </div>
       )}

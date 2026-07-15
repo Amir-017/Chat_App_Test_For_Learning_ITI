@@ -55,6 +55,8 @@
   },
   "groups": {
     "removedNotice": "You were removed from this group and can no longer send messages.",
+    "deleteGroupButton": "Delete group",
+    "confirmDeleteGroup": "Delete this group for everyone? This can't be undone and removes all its messages.",
     "sidebar": {
       "title": "Groups",
       "subtitle": "Manage rooms and members",

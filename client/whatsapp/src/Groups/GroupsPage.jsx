@@ -131,6 +131,16 @@ export const GroupsPage = () => {
             console.error(error);
         });
 
+        // The group was deleted (by its admin) - drop it, its messages, and deselect it if it was open
+        socket.on("group-deleted", ({ groupId }) => {
+            setGroups((prev) => prev.filter((group) => group._id !== groupId));
+            setAllMessages((prev) =>
+                prev.filter((msg) => !(msg.conversationType === "group" && String(msg.group) === String(groupId)))
+            );
+            setSelectedGroup((prev) => (prev && prev._id === groupId ? null : prev));
+            socket.emit("leave-group", groupId);
+        });
+
         // Cleanup: remove all these listeners when the component unmounts or this effect re-runs
         return () => {
             socket.off("group-message");
@@ -140,6 +150,7 @@ export const GroupsPage = () => {
             socket.off("group-updated");
             socket.off("chat-cleared");
             socket.off("clear-chat-error");
+            socket.off("group-deleted");
         };
     }, [socket, currentUserId]);
 
@@ -270,6 +281,22 @@ export const GroupsPage = () => {
         socket.emit("clear-chat", { conversationType: "group", targetId: selectedGroup._id });
     };
 
+    // Deletes the selected group entirely (admin only), for every member, after confirmation.
+    // Local state cleanup happens via the "group-deleted" socket event, which the server sends back to the admin too.
+    const handleDeleteGroup = async () => {
+        if (!selectedGroup || !isAdmin) return;
+
+        const confirmed = await confirmDialog({
+            title: t("groups.deleteGroupButton"),
+            text: t("groups.confirmDeleteGroup"),
+            confirmText: t("groups.deleteGroupButton"),
+            cancelText: t("common.cancel"),
+        });
+        if (!confirmed) return;
+
+        await api.delete(`api/groups/${selectedGroup._id}`);
+    };
+
     // Cancels edit mode and clears the input box
     const cancelEdit = () => {
         setEditingMessage(null);
@@ -341,6 +368,7 @@ export const GroupsPage = () => {
                         addMembers={addMembers}
                         toggleAddMember={toggleAddMember}
                         onAddMembers={handleAddMembers}
+                        onDeleteGroup={handleDeleteGroup}
                     />
                 </div>
             </div>
