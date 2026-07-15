@@ -22,7 +22,7 @@ export const useAuthedSocket = () => {
 
       setCurrentUserId(String(data.user._id));
 
-      const newSocket = io("http://localhost:3000", {
+      const newSocket = io(import.meta.env.VITE_API_URL || "http://localhost:3000", {
         auth: (cb) => getToken().then((token) => cb({ token })),
       });
       socketRef.current = newSocket;
