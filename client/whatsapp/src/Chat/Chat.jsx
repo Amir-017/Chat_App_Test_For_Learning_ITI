@@ -161,6 +161,19 @@ export const Chat = () => {
             );
         });
 
+        // Someone updated their profile (name/avatar) via Clerk - sync it into the users list
+        // and the open chat header so it reflects live without a page refresh.
+        socket.on("user-profile-updated", ({ userId, name, imageUrl }) => {
+            const patch = { name, imageUrl };
+
+            setAllUsers((prev) =>
+                prev.map((user) => (String(user._id) === String(userId) ? { ...user, ...patch } : user))
+            );
+            setSelectedUser((prev) =>
+                prev && String(prev._id) === String(userId) ? { ...prev, ...patch } : prev
+            );
+        });
+
         // Cleanup: remove all these listeners when the component unmounts or this effect re-runs
         return () => {
             socket.off("receive-message");
@@ -172,6 +185,7 @@ export const Chat = () => {
             socket.off("message-delete-error");
             socket.off("message-edit-error");
             socket.off("user-status-changed");
+            socket.off("user-profile-updated");
             socket.off("chat-cleared");
             socket.off("clear-chat-error");
             socket.off("group-deleted");

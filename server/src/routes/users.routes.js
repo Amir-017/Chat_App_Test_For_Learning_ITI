@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { getAllUsers, specificUser } = require("../controller/users.controllers");
+const { getAllUsers, specificUser, syncProfile } = require("../controller/users.controllers");
 const { auth } = require("../Auth/auth");
 
 const router = Router();
@@ -60,4 +60,30 @@ router.get("/",auth, getAllUsers);
  *         description: User not found
  */
 router.get("/userInfo",auth, specificUser);
+
+/**
+ * @swagger
+ * /api/users/sync-profile:
+ *   post:
+ *     summary: Re-sync the authenticated user's name/avatar from Clerk and broadcast the change over socket.io
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile synced successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 user: { $ref: '#/components/schemas/User' }
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ */
+router.post("/sync-profile", auth, syncProfile);
+
 module.exports = router;

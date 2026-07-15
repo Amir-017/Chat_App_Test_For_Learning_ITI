@@ -1,11 +1,30 @@
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser, UserButton } from "@clerk/react";
 import { useTranslation } from "react-i18next";
+import api from "../Api/axios";
 
 export const Header = () => {
   const navigate = useNavigate();
   const { isLoaded, isSignedIn, user } = useUser();
   const { t, i18n } = useTranslation();
+  const lastSyncedRef = useRef(null);
+
+  // Clerk's own UserButton/UserProfile modal edits the account directly, so this app's local
+  // User copy (name/imageUrl) only finds out once we push it here. Whenever Clerk's reactive
+  // user object changes, push it to the backend, which then broadcasts it over socket.io so
+  // every other open client's chat header/sidebar updates without a page refresh.
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !user) return;
+
+    const signature = `${user.fullName || ""}|${user.username || ""}|${user.imageUrl || ""}`;
+    if (lastSyncedRef.current === signature) return;
+    lastSyncedRef.current = signature;
+
+    api.post("api/users/sync-profile").catch((error) => {
+      console.error("Error syncing profile:", error.message);
+    });
+  }, [isLoaded, isSignedIn, user, user?.fullName, user?.username, user?.imageUrl]);
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === "ar" ? "en" : "ar");
