@@ -16,8 +16,18 @@ const getOrCreateLocalUser = async (clerkId) => {
   const clerkUser = await clerkClient.users.getUser(clerkId);
   const email = clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses?.[0]?.emailAddress;
   const name = clerkUser.fullName || clerkUser.username || email || "User";
+  const imageUrl = clerkUser.imageUrl || null;
 
-  return User.create({ clerkId, name, email, imageUrl: clerkUser.imageUrl || null });
+  // Clerk guarantees emails are unique among active accounts, so a local record with this
+  // email and a different clerkId can only be left over from a previously deleted Clerk
+  // account (email unique index would otherwise reject the create below). Re-link it to the
+  // new account instead of failing, so signing up again with the same email doesn't 500.
+  const relinked = email
+    ? await User.findOneAndUpdate({ email }, { clerkId, name, imageUrl }, { new: true })
+    : null;
+  if (relinked) return relinked;
+
+  return User.create({ clerkId, name, email, imageUrl });
 };
 
 // Reads the Clerk identity clerkMiddleware() attached to the request, rejects unauthenticated requests with plain JSON
