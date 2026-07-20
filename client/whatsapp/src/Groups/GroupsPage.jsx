@@ -26,6 +26,7 @@ export const GroupsPage = () => {
     const [createMembers, setCreateMembers] = useState([]);
     const [isCreatingGroup, setIsCreatingGroup] = useState(false);
     const [addMembers, setAddMembers] = useState([]);
+    const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
     const isAdmin = selectedGroup && String(selectedGroup.admin?._id || selectedGroup.admin) === currentUserId;
     const isRemovedFromSelectedGroup = selectedGroup && (selectedGroup.removedMembers || []).some((member) => String(member._id || member) === currentUserId);
     const selectedGroupMessages = selectedGroup
@@ -303,33 +304,48 @@ export const GroupsPage = () => {
         setMessage("");
     };
 
+    // Selects a group from the sidebar and closes the mobile members drawer, if it was left open
+    const handleSelectGroup = (group) => {
+        setSelectedGroup(group);
+        setIsMembersPanelOpen(false);
+    };
+
+    // Deselects the current group (mobile "back" button) and closes the members drawer
+    const handleBackToList = () => {
+        setSelectedGroup(null);
+        setIsMembersPanelOpen(false);
+    };
+
     if (!isReady) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
+            <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
                 {t("common.loading")}
             </div>
         );
     }
 
     return (
-        <div className="flex h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
+        <div className="flex h-full bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
 
             {/* sidebar */}
             <GroupsSidebar
                 groups={groups}
                 selectedGroup={selectedGroup}
-                onSelectGroup={setSelectedGroup}
+                onSelectGroup={handleSelectGroup}
                 onOpenCreate={() => setIsCreateOpen(true)}
                 currentUserId={currentUserId}
+                isVisibleOnMobile={!selectedGroup}
             />
-            <div className="flex-1 flex flex-col">
+            <div className={`w-full md:w-auto md:flex-1 flex-col ${selectedGroup ? "flex" : "hidden md:flex"}`}>
                 <GroupChatHeader
                     selectedGroup={selectedGroup}
                     isRemovedFromSelectedGroup={isRemovedFromSelectedGroup}
                     onClearChat={handleClearChat}
+                    onBack={handleBackToList}
+                    onToggleMembers={() => setIsMembersPanelOpen((prev) => !prev)}
                 />
 
-                <div className="flex-1 grid grid-cols-1 xl:grid-cols-[1.5fr_0.9fr] gap-4 p-4 overflow-hidden">
+                <div className="flex-1 grid grid-cols-1 xl:grid-cols-[1.5fr_0.9fr] gap-4 p-2 sm:p-4 overflow-hidden">
                     <div className="bg-slate-950/65 rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.35)] border border-white/10 flex flex-col overflow-hidden backdrop-blur-xl">
                         {isRemovedFromSelectedGroup && (
                             <div className="mx-5 mt-5 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
@@ -359,20 +375,51 @@ export const GroupsPage = () => {
                             isRemovedFromSelectedGroup={isRemovedFromSelectedGroup}
                         />
                     </div>
-                    {/* group members panel */}
-                    <GroupMembersPanel
-                        selectedGroup={selectedGroup}
-                        isAdmin={isAdmin}
-                        onRemoveMember={handleRemoveMember}
-                        availableUsersToAdd={availableUsersToAdd}
-                        addMembers={addMembers}
-                        toggleAddMember={toggleAddMember}
-                        onAddMembers={handleAddMembers}
-                        onDeleteGroup={handleDeleteGroup}
-                    />
+
+                    {/* group members panel: static column on xl+ screens */}
+                    <div className="hidden xl:flex xl:flex-col xl:min-h-0">
+                        <GroupMembersPanel
+                            selectedGroup={selectedGroup}
+                            isAdmin={isAdmin}
+                            onRemoveMember={handleRemoveMember}
+                            availableUsersToAdd={availableUsersToAdd}
+                            addMembers={addMembers}
+                            toggleAddMember={toggleAddMember}
+                            onAddMembers={handleAddMembers}
+                            onDeleteGroup={handleDeleteGroup}
+                        />
+                    </div>
                 </div>
             </div>
 
+            {/* group members panel: slide-over drawer below xl */}
+            {isMembersPanelOpen && (
+                <div className="xl:hidden fixed inset-0 z-40 flex justify-end">
+                    <div
+                        className="absolute inset-0 bg-black/60"
+                        onClick={() => setIsMembersPanelOpen(false)}
+                    />
+                    <div className="relative w-full max-w-sm h-full overflow-y-auto bg-slate-950 p-3">
+                        <button
+                            type="button"
+                            onClick={() => setIsMembersPanelOpen(false)}
+                            className="mb-3 text-slate-400 hover:text-white text-sm font-semibold"
+                        >
+                            &times; {t("common.close")}
+                        </button>
+                        <GroupMembersPanel
+                            selectedGroup={selectedGroup}
+                            isAdmin={isAdmin}
+                            onRemoveMember={handleRemoveMember}
+                            availableUsersToAdd={availableUsersToAdd}
+                            addMembers={addMembers}
+                            toggleAddMember={toggleAddMember}
+                            onAddMembers={handleAddMembers}
+                            onDeleteGroup={handleDeleteGroup}
+                        />
+                    </div>
+                </div>
+            )}
 
             <CreateGroupModal
                 isOpen={isCreateOpen}

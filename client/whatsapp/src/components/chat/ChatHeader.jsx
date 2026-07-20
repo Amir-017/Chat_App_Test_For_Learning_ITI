@@ -19,7 +19,7 @@ const formatLastSeen = (lastSeen, t) => {
   return t("chat.header.lastSeenDate", { date: new Date(lastSeen).toLocaleDateString() });
 };
 
-export const ChatHeader = ({ chatAvatar, chatTitle, selectedGroup, selectedUser, onClearChat, isGroupAdmin, onDeleteGroup }) => {
+export const ChatHeader = ({ chatAvatar, chatTitle, selectedGroup, selectedUser, onClearChat, isGroupAdmin, onDeleteGroup, onBack }) => {
   const { t } = useTranslation();
 
   const statusText = !selectedGroup && selectedUser
@@ -27,10 +27,19 @@ export const ChatHeader = ({ chatAvatar, chatTitle, selectedGroup, selectedUser,
       ? t("chat.header.online")
       : formatLastSeen(selectedUser.lastSeen, t)
     : null;
-
   return (
-    <div className="bg-slate-950/80 px-6 py-4 flex items-center justify-between gap-3 shadow-md border-b border-white/10">
+    <div className="bg-slate-950/80 px-3 sm:px-6 py-4 flex items-center justify-between gap-3 shadow-md border-b border-white/10">
       <div className="flex items-center gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={onBack}
+          className="md:hidden shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-slate-200 hover:bg-white/10 transition"
+          aria-label={t("common.back")}
+        >
+          <svg className="w-5 h-5 rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
         <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center text-slate-950 font-bold">
           {chatAvatar}
         </div>
@@ -45,13 +54,13 @@ export const ChatHeader = ({ chatAvatar, chatTitle, selectedGroup, selectedUser,
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
         {(selectedGroup || selectedUser) && (
           <button
             type="button"
             onClick={onClearChat}
             title={t("chat.header.clearChat")}
-            className="text-xs font-semibold text-slate-300 hover:text-red-400 border border-white/10 hover:border-red-400/40 rounded-full px-3 py-2 transition"
+            className="whitespace-nowrap text-[11px] sm:text-xs font-semibold text-slate-300 hover:text-red-400 border border-white/10 hover:border-red-400/40 rounded-full px-2.5 sm:px-3 py-1.5 sm:py-2 transition"
           >
             {t("chat.header.clearChat")}
           </button>
@@ -62,7 +71,7 @@ export const ChatHeader = ({ chatAvatar, chatTitle, selectedGroup, selectedUser,
             type="button"
             onClick={onDeleteGroup}
             title={t("groups.deleteGroupButton")}
-            className="text-xs font-semibold text-red-300 hover:text-red-200 bg-red-500/10 hover:bg-red-500/20 border border-red-400/30 rounded-full px-3 py-2 transition"
+            className="whitespace-nowrap text-[11px] sm:text-xs font-semibold text-red-300 hover:text-red-200 bg-red-500/10 hover:bg-red-500/20 border border-red-400/30 rounded-full px-2.5 sm:px-3 py-1.5 sm:py-2 transition"
           >
             {t("groups.deleteGroupButton")}
           </button>

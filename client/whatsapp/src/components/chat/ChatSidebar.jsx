@@ -8,10 +8,11 @@ export const ChatSidebar = ({
     selectedUser,
     onSelectUser,
     onOpenCreateGroup,
+    isVisibleOnMobile = true,
 }) => {
     const { t } = useTranslation();
     return (
-        <div className="w-1/5 bg-slate-950/85 border-s border-white/10 flex flex-col backdrop-blur-xl">
+        <div className={`w-full md:w-1/5 md:min-w-[260px] bg-slate-950/85 border-s border-white/10 flex-col backdrop-blur-xl ${isVisibleOnMobile ? "flex" : "hidden md:flex"}`}>
             <div className="bg-slate-950/90 px-4 py-4 flex items-center justify-between gap-1 border-b border-white/10">
                 <h2 className="text-white font-bold text-lg">{t("chat.sidebar.title")}</h2>
                 <button

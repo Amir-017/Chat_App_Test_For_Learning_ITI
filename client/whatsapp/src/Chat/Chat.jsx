@@ -415,15 +415,22 @@ export const Chat = () => {
 
     if (!isReady) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
+            <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
                 {t("common.loading")}
             </div>
         );
     }
 
+    const hasActiveChat = Boolean(selectedUser || selectedGroup);
+
+    const handleBackToList = () => {
+        setSelectedUser(null);
+        setSelectedGroup(null);
+    };
+
     return (
-        <div className="flex h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
-            <div className="w-4/5 flex flex-col bg-slate-950/65 border-e border-white/10 backdrop-blur-xl">
+        <div className="flex h-full bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#02040d_0%,#070b18_100%)] text-slate-100">
+            <div className={`w-full md:w-4/5 flex-col bg-slate-950/65 border-e border-white/10 backdrop-blur-xl ${hasActiveChat ? "flex" : "hidden md:flex"}`}>
                 <ChatHeader
                     chatAvatar={chatAvatar}
                     chatTitle={chatTitle}
@@ -432,6 +439,7 @@ export const Chat = () => {
                     onClearChat={handleClearChat}
                     isGroupAdmin={isSelectedGroupAdmin}
                     onDeleteGroup={handleDeleteGroup}
+                    onBack={handleBackToList}
                 />
 
                 <ChatMessageList
@@ -467,6 +475,7 @@ export const Chat = () => {
                 selectedUser={selectedUser}
                 onSelectUser={handleSelectUser}
                 onOpenCreateGroup={() => setIsGroupModalOpen(true)}
+                isVisibleOnMobile={!hasActiveChat}
             />
 
             <CreateGroupModal

@@ -1,10 +1,9 @@
 import { useTranslation } from "react-i18next";
 
-export const GroupsSidebar = ({ groups, selectedGroup, onSelectGroup, onOpenCreate, currentUserId }) => {
+export const GroupsSidebar = ({ groups, selectedGroup, onSelectGroup, onOpenCreate, currentUserId, isVisibleOnMobile = true }) => {
   const { t } = useTranslation();
-  console.log(groups)
   return (
-    <div className="w-80 bg-slate-950/85 border-e border-white/10 flex flex-col backdrop-blur-xl">
+    <div className={`w-full md:w-80 bg-slate-950/85 border-e border-white/10 flex-col backdrop-blur-xl ${isVisibleOnMobile ? "flex" : "hidden md:flex"}`}>
       <div className="px-4 py-4 bg-slate-950/90 text-white flex items-center justify-between border-b border-white/10">
         <div>
           <h2 className="font-bold text-lg">{t("groups.sidebar.title")}</h2>
@@ -44,7 +43,7 @@ export const GroupsSidebar = ({ groups, selectedGroup, onSelectGroup, onOpenCrea
                 )}
               </div>
             </div>
-          </button>
+          </button>           
         ))}
       </div>
     </div>
