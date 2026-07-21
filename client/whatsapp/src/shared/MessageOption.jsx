@@ -21,7 +21,6 @@ const handleDeleteMessage = (msg) => {
   setAllMessages((prev) =>
     prev.map((m) => (m._id === msg?._id ? { ...m, isDeleted: true } : m))
   );
-  // setCheckDelete(msg?._id);
   // send delete request to server
   socket.emit('delete-message', {
     messageId: msg?._id,

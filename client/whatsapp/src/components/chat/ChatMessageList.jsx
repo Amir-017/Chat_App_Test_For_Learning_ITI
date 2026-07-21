@@ -17,7 +17,7 @@ export const ChatMessageList = ({
             {messages.map((msg, index) => {
                 const isSender = String(msg.sender) === currentUserId;
                 const isGroupMessage = msg.conversationType === "group";
-
+       
                 return (
                     <div
                         key={msg._id}
@@ -43,7 +43,7 @@ export const ChatMessageList = ({
                                 {!isSender && (
                                     <div className="px-2 pb-1 text-[11px] font-semibold text-emerald-300/80">
                                         {getUserName(msg.sender)}
-                                    </div>
+                                    </div>          
                                 )}
                                 <div className={`min-w-0 rounded-2xl px-4 py-2 shadow-sm ${isSender ? "bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-tr-none text-slate-950" : "bg-slate-900/80 border border-white/10 rounded-tl-none text-slate-100"}`}>
                                     {msg.image?.url && (

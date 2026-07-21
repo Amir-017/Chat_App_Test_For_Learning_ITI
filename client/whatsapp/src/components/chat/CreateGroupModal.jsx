@@ -56,7 +56,6 @@ export const CreateGroupModal = ({
                                 >
                                     <input
                                         type="checkbox"
-                                        checked={groupMembers.includes(user._id)}
                                         onChange={() => onToggleMember(user._id)}
                                         className="h-4 w-4 accent-emerald-400"
                                     />
